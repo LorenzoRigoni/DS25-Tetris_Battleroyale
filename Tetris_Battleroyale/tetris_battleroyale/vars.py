@@ -1,5 +1,5 @@
 # vars.py
-
+import random
 # Dimensioni della finestra di gioco
 SCREEN_WIDTH = 400  # Aumentata per far spazio al prossimo pezzo
 SCREEN_HEIGHT = 600
@@ -28,5 +28,9 @@ COLS = 10
 FALL_SPEED = 500  # in millisecondi
 
 # Area del prossimo pezzo
-NEXT_PIECE_AREA_WIDTH = 6  # Larghezza in blocchi
-NEXT_PIECE_AREA_HEIGHT = 4  # Altezza in blocchi
+NEXT_PIECE_AREA_WIDTH = 4  # Larghezza in blocchi (ridotta)
+NEXT_PIECE_AREA_HEIGHT = 4  # Altezza in blocchi (ridotta)
+
+# Area di hold
+HOLD_PIECE_AREA_WIDTH = 4  # Larghezza in blocchi (ridotta)
+HOLD_PIECE_AREA_HEIGHT = 4  # Altezza in blocchi (ridotta)

@@ -67,7 +67,7 @@ class TetrisView:
                         pygame.draw.rect(self.screen, hold_piece['color'], 
                                         (start_x + x * small_block_size, start_y + y * small_block_size, small_block_size, small_block_size))
 
-    def update(self, grid, current_piece, next_piece, hold_piece):
+    def update(self, grid, current_piece, next_piece, hold_piece, game_over=False):
         # Update the display with the current game state
         self.screen.fill(BLACK)
         self.draw_grid(grid)
@@ -75,6 +75,8 @@ class TetrisView:
         self.draw_piece(current_piece)
         self.draw_next_piece(next_piece)
         self.draw_hold_piece(hold_piece)  # Draw the hold piece
+        if game_over:
+            self.display_game_over()
         pygame.display.flip()
         self.clock.tick(30)
 
@@ -144,3 +146,10 @@ class TetrisView:
                     if new_x < 0 or new_x >= COLS or new_y >= ROWS or grid[new_y][new_x]:
                         return True
         return False
+
+    def display_game_over(self):
+        # Display the game over text
+        font = pygame.font.SysFont(None, 74)
+        game_over_text = font.render("GAME OVER", True, (255, 0, 0))
+        self.screen.blit(game_over_text, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 50))
+        pygame.display.flip()

@@ -124,6 +124,30 @@ class TetrisModel:
                 # Scambia il pezzo corrente con quello in hold
                 self.current_piece, self.hold_piece = self.hold_piece, self.current_piece
             self.can_hold = False  # Imposta il flag a False per evitare di mettere in hold più di una volta
+
+    def drop_piece_to_bottom(self):
+        # Move the piece down until it collides
+        while self.move_piece(0, 1):
+            pass
+        self.lock_piece()
+        lines_cleared = self.clear_lines()
+        if lines_cleared:
+            print(f"Lines cleared: {lines_cleared}")
+
+    def rotate_piece_intelligently(self):
+        # Try to rotate the piece and handle collisions
+        self.rotate_piece()
+        if self.check_collision():
+            # If there is a collision, try to move the piece left
+            self.move_piece(-1, 0)
+            if self.check_collision():
+                # If still colliding, try to move the piece right
+                self.move_piece(2, 0)
+                if self.check_collision():
+                    # If still colliding, revert everything
+                    self.move_piece(-1, 0)
+                    self.rotate_piece()  # Revert the rotation
+
     def check_collision_with_gray_line(self):
         # Check if the current piece collides with the new gray line
         piece = self.current_piece

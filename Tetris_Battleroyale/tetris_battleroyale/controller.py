@@ -23,37 +23,14 @@ class TetrisController:
                 return False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    self.rotate_piece_intelligently()
+                    self.model.rotate_piece_intelligently()
                 elif event.key == pygame.K_SPACE:  # Drop the piece to the bottom
-                    self.drop_piece_to_bottom()
+                    self.model.drop_piece_to_bottom()
                 elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:  # Hold the piece
                     self.model.hold_current_piece()
                 elif event.key == pygame.K_m:  # Add a gray line with a random hole
                     self.model.add_gray_line_with_hole()
         return True
-
-    def drop_piece_to_bottom(self):
-        # Move the piece down until it collides
-        while self.model.move_piece(0, 1):
-            pass
-        self.model.lock_piece()
-        lines_cleared = self.model.clear_lines()
-        if lines_cleared:
-            print(f"Lines cleared: {lines_cleared}")
-
-    def rotate_piece_intelligently(self):
-        # Try to rotate the piece and handle collisions
-        self.model.rotate_piece()
-        if self.model.check_collision():
-            # If there is a collision, try to move the piece left
-            self.model.move_piece(-1, 0)
-            if self.model.check_collision():
-                # If still colliding, try to move the piece right
-                self.model.move_piece(2, 0)
-                if self.model.check_collision():
-                    # If still colliding, revert everything
-                    self.model.move_piece(-1, 0)
-                    self.model.rotate_piece()  # Revert the rotation
 
     def run(self):
         # Main game loop
@@ -92,14 +69,10 @@ class TetrisController:
                     self.last_fall_time = current_time
 
                 # Update the view
-                self.view.update(self.model.grid, self.model.current_piece, self.model.next_piece, self.model.hold_piece)
+                self.view.update(self.model.grid, self.model.current_piece, self.model.next_piece, self.model.hold_piece, game_over)
             else:
                 # Game over state
-                font = pygame.font.SysFont(None, 74)
-                game_over_text = font.render("GAME OVER", True, (255, 0, 0))
-                self.view.screen.blit(game_over_text, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 50))
-                pygame.display.flip()
-
+                self.view.display_game_over()
                 # Wait for a key press to quit
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:

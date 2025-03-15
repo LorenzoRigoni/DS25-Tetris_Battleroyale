@@ -1,7 +1,7 @@
 from server import Server
 from package import Package
 
-class GameManager(Server):
+class ServerGameManager(Server):
     '''
     This class manage the logic of server in the lobby:
         1. send the game state of a player to all others players

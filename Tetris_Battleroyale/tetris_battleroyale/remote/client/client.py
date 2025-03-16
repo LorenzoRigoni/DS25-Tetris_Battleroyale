@@ -3,7 +3,7 @@ import threading
 from package import Package
 
 class Client:
-    '''Manage the communication of the client'''
+    '''Manage the communication of the client (only non-game aspects)'''
 
     def __init__(self, server_ip, server_port):
         self.server_addr = (server_ip, server_port)
@@ -26,7 +26,7 @@ class Client:
                 print(f"Client error: {e}")
 
     def handle_data(self, data):
-        '''Handle the packet received from the server'''
+        '''Handle the packet received from the server (only no-game aspects)'''
         packet_type = data.get("type")
 
         if packet_type == Package.GET_LOBBIES:

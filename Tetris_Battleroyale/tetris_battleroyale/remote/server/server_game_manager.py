@@ -27,29 +27,33 @@ class ServerGameManager(Server):
                 if packet_type == Package.LEAVE_LOBBY:
                     self.handle_leave_lobby(packet, addr)
                 if packet_type == Package.SEND_ROW:
-                    self.send_broken_row(packet["lobby_id"], packet["from"], packet["to"], packet["lines"])
+                    self.send_broken_row(packet["lobby_id"], packet["player_id"], packet["target"], packet["rows"])
                 elif packet_type == Package.UPDATE_STATE:
                     self.update_state(packet["lobby_id"], packet["player_id"], packet["grid_state"])
+                elif packet_type == Package.PLAYER_DEFEATED:
+                    self.handle_defeat(packet["lobby_id"], packet["player_id"], packet["player_name"])
 
             except Exception as e:
                 print(f"Error in the receivment of a packet on the server: {e}")
 
-    def send_broken_row(self, lobby_id, from_player, to_players, lines):
+    def send_broken_row(self, lobby_id, from_player, to_player, lines):
         '''Send to a player (or to all) the broken rows'''
-        if to_players in self.lobbies[lobby_id]["players"]:
-            target_addr = self.lobbies[lobby_id]["players"][to_players]
-            for addr in target_addr:
-                self.send_message(Package.ROW_RECEIVED, addr, from_player = from_player, lines = lines)
+        if to_player == None:
+            self.send_broadcast_message(lobby_id, from_player, Package.ROW_RECEIVED, lines = lines)
+        else:
+            if to_player in self.lobbies[lobby_id]["players"]:
+                self.send_message(Package.SEND_ROW, self.lobbies[lobby_id]["players"][to_player], lines = lines)
 
     def update_state(self, lobby_id, player_id, grid_state):
         '''Update the state of a player and send to all others players'''
-        self.lobbies[lobby_id]["state"][player_id] = grid_state
-        self.send_broadcast_message(lobby_id, Package.UPDATE_STATE, grid_state = grid_state, player_id = player_id)
+        if lobby_id in self.lobbies and player_id in self.lobbies[lobby_id]["players"]:
+            self.lobbies[lobby_id]["state"][player_id] = grid_state
+            self.send_broadcast_message(lobby_id, Package.UPDATE_STATE, grid_state = grid_state, player_id = player_id)
 
-    def handle_defeat(self, lobby_id, player_id):
+    def handle_defeat(self, lobby_id, player_id, player_name):
         '''Manage the defeat of a player and checks if the game is over'''
         del self.lobbies[lobby_id]["players"][player_id]
-        self.send_broadcast_message(lobby_id, Package.PLAYER_DEFEATED, player_id = player_id)
+        self.send_broadcast_message(lobby_id, Package.PLAYER_DEFEATED, player_id = player_id, player_name = player_name)
 
         if len(self.lobbies[lobby_id]["players"]) == 1:
             winner = list(self.lobbies[lobby_id]["players"]["player_name"])[0]

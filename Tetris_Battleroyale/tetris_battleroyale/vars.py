@@ -1,11 +1,14 @@
 # vars.py
 import random
 # Dimensioni della finestra di gioco
-SCREEN_WIDTH = 400  # Aumentata per far spazio al prossimo pezzo
-SCREEN_HEIGHT = 600
+GAME_SCREEN_WIDTH = 400  # Aumentata per far spazio al prossimo pezzo
+GAME_SCREEN_HEIGHT = 800
+
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 800
 
 # Dimensioni del blocco
-BLOCK_SIZE = 30
+BLOCK_SIZE = GAME_SCREEN_WIDTH // 10  # 10 blocks per row
 
 # Colori
 BLACK = (0, 0, 0)

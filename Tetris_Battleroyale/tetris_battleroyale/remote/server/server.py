@@ -36,7 +36,7 @@ class Server:
                 print(f"Player {player_name} with id {player_id} joined lobby number {lobby_id}")
 
                 self.send_message(Package.JOINED_LOBBY, addr, player_id = player_id, player_name = player_name)
-                self.send_broadcast_message(lobby_id, Package.PLAYER_JOINED, player_id = player_id, player_name = player_name)
+                self.send_broadcast_message(lobby_id, player_id, Package.PLAYER_JOINED, player_name = player_name)
 
                 if len(lobby["players"]) >= self.num_min_players_per_lobby:
                     threading.Thread(target=self.start_game_countdown, args=(lobby_id,)).start()
@@ -56,24 +56,28 @@ class Server:
             print(f"Player {player_name} left the lobby")
 
             self.send_message(Package.LEAVE_LOBBY, addr, player_id = player_id, player_name = player_name)
-            self.send_broadcast_message(lobby_id, Package.PLAYER_LEFT, player_id = player_id, player_name = player_name)
+            self.send_broadcast_message(lobby_id, player_id, Package.PLAYER_LEFT, player_name = player_name)
 
     def start_game_countdown(self, lobby_id):
         '''Activate a 5 second countdown when a lobby is started'''
         lobby = self.lobbies[lobby_id]
         if not lobby["in_game"]:
-            self.send_broadcast_message(lobby_id, Package.GAME_COUNTDOWN, initial_timer = 5)
+            self.send_broadcast_message(lobby_id, None, Package.GAME_COUNTDOWN, initial_timer = 5)
             time.sleep(5)
             lobby["in_game"] = True
-            self.send_broadcast_message(lobby_id, Package.GAME_START)
+            self.send_broadcast_message(lobby_id, None, Package.GAME_START)
 
     def send_message(self, packet_type, addr, **kwargs):
         '''Send a message to a specific client'''
         data = Package.encode(packet_type, **kwargs)
         self.socket.sendto(data, addr)
 
-    def send_broadcast_message(self, lobby_id, packet_type, **kwargs):
-        '''Send a message to all the clients of a lobby'''
+    def send_broadcast_message(self, lobby_id, player_id, packet_type, **kwargs):
+        '''Send a message to all the opponents of a lobby'''
         if lobby_id in self.lobbies:
-            for addr in self.lobbies[lobby_id]["players"].values():
+            if player_id != None:
+                opponents = {player: addr for player, addr in self.lobbies[lobby_id]["players"] if player != player_id}
+            else:
+                opponents = {player: addr for player, addr in self.lobbies[lobby_id]["players"]}
+            for addr in opponents:
                 self.send_message(packet_type, addr, **kwargs)

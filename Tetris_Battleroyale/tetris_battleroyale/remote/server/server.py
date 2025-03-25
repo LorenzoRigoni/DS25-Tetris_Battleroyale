@@ -5,7 +5,8 @@ import msgpack
 from package import Package
 
 class Server:
-    def __init__(self, host, port, num_max_lobbies, num_max_players_per_lobby, num_min_players_per_lobby):
+    def __init__(self, host, port, num_max_lobbies, num_max_players_per_lobby, num_min_players_per_lobby,controller):
+        self.controller = controller
         self.host = host
         self.port = port
         self.num_max_lobbies = num_max_lobbies

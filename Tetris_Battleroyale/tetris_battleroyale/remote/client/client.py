@@ -5,7 +5,8 @@ from package import Package
 class Client:
     '''Manage the communication of the client (only non-game aspects)'''
 
-    def __init__(self, server_ip, server_port):
+    def __init__(self, server_ip, server_port,controller):
+        self.controller = controller
         self.server_addr = (server_ip, server_port)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.running = True
@@ -42,7 +43,7 @@ class Client:
         elif packet_type == Package.GAME_COUNTDOWN:
             pass
         elif packet_type == Package.GAME_START:
-            #TODO call run on client
+            self.controller.run()
             pass
 
     def start_listening(self):

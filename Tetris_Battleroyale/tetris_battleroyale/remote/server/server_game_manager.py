@@ -9,8 +9,8 @@ class ServerGameManager(Server):
         3. checks if remains only one player (victory)
     '''
 
-    def __init__(self, host, port, num_max_lobbies, num_max_players_per_lobby, num_min_players_per_lobby):
-        Server.__init__(host, port, num_max_lobbies, num_max_players_per_lobby, num_min_players_per_lobby)
+    def __init__(self, host, port, num_max_lobbies, num_max_players_per_lobby, num_min_players_per_lobby,controller):
+        Server.__init__(host, port, num_max_lobbies, num_max_players_per_lobby, num_min_players_per_lobby,controller)
 
     def handle_client(self):
         '''Handle the client requests'''

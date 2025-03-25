@@ -4,10 +4,11 @@ import pygame
 from model import TetrisModel
 from view import TetrisView
 from vars import *
-import numpy as np
+from remote.client.client_game_manager import ClientGameManager
+from remote.server.server_game_manager import ServerGameManager
 
 class TetrisController:
-    def __init__(self):
+    def __init__(self,mode="client"):
         # Initialize the model, view, and game settings
         self.model = TetrisModel()
         self.view = TetrisView()
@@ -16,6 +17,10 @@ class TetrisController:
         self.fast_fall = False
         self.last_move_time = pygame.time.get_ticks()
         self.move_cooldown = 200  # Cooldown for lateral movement (in milliseconds)
+        if mode == "client":
+            self.client = ClientGameManager(0,"bruno",self)
+        else:
+            self.server = ServerGameManager(self)
 
     def handle_events(self):
         # Handle user input events

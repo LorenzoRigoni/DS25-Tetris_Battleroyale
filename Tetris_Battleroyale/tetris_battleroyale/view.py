@@ -27,19 +27,23 @@ class TetrisView:
         main_surface = pygame.Surface((GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT))
         self.main_game_view = GameView(main=True, screen=main_surface)
 
-    def update(self, grid, current_piece, next_piece, hold_piece, game_over=False):
+    def update(self, grid, current_piece,grids, current_pieces, next_piece, hold_piece, game_over=False):
         # Clear the main screen
         self.screen.fill(BLACK)
 
         # Draw the 4 small game views
         small_width = GAME_SCREEN_WIDTH // 2
         small_height = GAME_SCREEN_HEIGHT // 2
+        main_passed = 0
         for i, (game_view, game_surface) in enumerate(self.game_views):
-            x = (i % 2) * small_width
-            y = (i // 2) * small_height
+            if grids[i] == None:
+                main_passed=1
+                continue
+            x = ((i-main_passed) % 2) * small_width
+            y = ((i-main_passed)// 2) * small_height
 
             # Update the game view on its own surface
-            game_view.update(grid, current_piece, next_piece, hold_piece, game_over)
+            game_view.update(grids[i-main_passed], current_piece[i-main_passed], next_piece, hold_piece, game_over)
 
             # Blit the game view's surface onto the main screen
             self.screen.blit(game_surface, (x, y))

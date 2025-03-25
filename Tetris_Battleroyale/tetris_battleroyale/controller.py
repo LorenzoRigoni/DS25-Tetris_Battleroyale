@@ -4,6 +4,7 @@ import pygame
 from model import TetrisModel
 from view import TetrisView
 from vars import *
+import numpy as np
 
 class TetrisController:
     def __init__(self):
@@ -31,11 +32,16 @@ class TetrisController:
                 elif event.key == pygame.K_m:  # Add a gray line with a random hole
                     self.model.add_gray_line_with_hole()
         return True
-
-    def run(self):
+    grids = []
+    current_pieces = []
+    player_number = None
+    #TODO remove 4 as default value
+    def run(self,player_number = 4):
+        self.player_number = player_number
         # Main game loop
         running = True
         game_over = False  # Flag to track game over state
+        
         while running:
             if not game_over:
                 running = self.handle_events()
@@ -69,7 +75,7 @@ class TetrisController:
                     self.last_fall_time = current_time
 
                 # Update the view
-                self.view.update(self.model.grid, self.model.current_piece, self.model.next_piece, self.model.hold_piece, game_over)
+                self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, game_over)
             else:
                 # Game over state
                 self.view.display_game_over()
@@ -82,3 +88,11 @@ class TetrisController:
                             running = False
 
         pygame.quit()
+    def updateEnemies(self, playerNumber, grid, current_piece):
+        #initilize grids and pieces
+        if len(self.grids) < self.player_number:
+            self.grids = [None]*self.player_number
+            self.current_pieces = [None]*self.player_number
+        #upodate the grids and piece of the players
+        self.grids[playerNumber] = grid
+        self.current_pieces[playerNumber] = current_piece

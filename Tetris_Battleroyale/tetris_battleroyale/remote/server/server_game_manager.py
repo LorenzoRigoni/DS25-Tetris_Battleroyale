@@ -29,7 +29,7 @@ class ServerGameManager(Server):
                 if packet_type == Package.SEND_ROW:
                     self.send_broken_row(packet["lobby_id"], packet["player_id"], packet["target"], packet["rows"])
                 elif packet_type == Package.UPDATE_STATE:
-                    self.update_state(packet["lobby_id"], packet["player_id"], packet["grid_state"])
+                    self.update_state(packet["lobby_id"], packet["player_id"], packet["grid_state"], packet["current_piece"])
                 elif packet_type == Package.PLAYER_DEFEATED:
                     self.handle_defeat(packet["lobby_id"], packet["player_id"], packet["player_name"])
 
@@ -44,11 +44,11 @@ class ServerGameManager(Server):
             if to_player in self.lobbies[lobby_id]["players"]:
                 self.send_message(Package.SEND_ROW, self.lobbies[lobby_id]["players"][to_player], lines = lines)
 
-    def update_state(self, lobby_id, player_id, grid_state):
+    def update_state(self, lobby_id, player_id, grid_state, current_piece):
         '''Update the state of a player and send to all others players'''
         if lobby_id in self.lobbies and player_id in self.lobbies[lobby_id]["players"]:
             self.lobbies[lobby_id]["state"][player_id] = grid_state
-            self.send_broadcast_message(lobby_id, Package.UPDATE_STATE, grid_state = grid_state, player_id = player_id)
+            self.send_broadcast_message(lobby_id, Package.UPDATE_STATE, grid_state = grid_state, player_id = player_id, current_piece = current_piece)
 
     def handle_defeat(self, lobby_id, player_id, player_name):
         '''Manage the defeat of a player and checks if the game is over'''

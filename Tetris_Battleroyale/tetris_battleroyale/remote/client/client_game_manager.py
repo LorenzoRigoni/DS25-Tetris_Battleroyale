@@ -17,6 +17,7 @@ class ClientGameManager(Client):
             lobby_id = data["lobby_id"]
             player_id = data["player_id"]
             new_grid = data["grid"]
+            new_current_piece = data["current_piece"]
             #TODO: call to the method of controller for display the grid of opponents
         elif packet_type == Package.SEND_ROW:
             lobby_id = data["lobby_id"]
@@ -34,10 +35,11 @@ class ClientGameManager(Client):
             lobby_id = data["lobby_id"]
             winner = data["winner"]
             #TODO: call to the method of controller for show a message with name of winner
+        #TODO add Lobby start: it gives the number of player and calls the run method
 
-    def send_game_state(self, grid, lobby_id):
+    def send_game_state(self, grid, lobby_id, current_piece):
         '''Send the game state of the user to the server'''
-        self.send(Package.UPDATE_STATE, player_id = self.player_id, grid = grid, lobby_id = lobby_id)
+        self.send(Package.UPDATE_STATE, player_id = self.player_id, grid = grid, lobby_id = lobby_id, current_piece = current_piece)
 
     def send_broken_row(self, rows, lobby_id, target):
         '''Send the broken rows to the server with the information for who is/are the targets'''

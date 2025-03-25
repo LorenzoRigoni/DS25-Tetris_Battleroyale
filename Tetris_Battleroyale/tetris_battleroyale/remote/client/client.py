@@ -42,6 +42,7 @@ class Client:
         elif packet_type == Package.GAME_COUNTDOWN:
             pass
         elif packet_type == Package.GAME_START:
+            #TODO call run on client
             pass
 
     def start_listening(self):

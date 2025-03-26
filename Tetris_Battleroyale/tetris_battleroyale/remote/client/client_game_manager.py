@@ -4,8 +4,8 @@ from package import Package
 class ClientGameManager(Client):
     '''Manage the game functions of the users'''
 
-    def __init__(self, player_id, player_name, controller):
-        Client.__init__(self, controller.server_ip, controller.server_port, controller)
+    def __init__(self, player_id, player_name, controller, ip, port):
+        Client.__init__(self, controller.server_ip, controller.server_port, controller, ip, port)
         self.player_id = player_id
         self.player_name = player_name
         self.lobbies = {}
@@ -27,6 +27,7 @@ class ClientGameManager(Client):
             target = data["target"]
             rows = data["rows"]
             #TODO: call to the method of controller for add the broken rows
+        #TODO We don't need this one, chief
         elif packet_type == Package.PLAYER_DEFEATED:
             lobby_id = data["lobby_id"]
             player_id = data["player_id"]

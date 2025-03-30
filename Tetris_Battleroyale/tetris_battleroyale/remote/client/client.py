@@ -28,26 +28,6 @@ class Client:
             except Exception as e:
                 print(f"Client error: {e}")
 
-    def handle_data(self, data):
-        '''Handle the packet received from the server (only no-game aspects)'''
-        packet_type = data.get("type")
-
-        if packet_type == Package.GET_LOBBIES:
-            pass
-        elif packet_type == Package.JOIN_LOBBY:
-            pass
-        elif packet_type == Package.PLAYER_JOINED:
-            pass
-        elif packet_type == Package.LEAVE_LOBBY:
-            pass
-        elif packet_type == Package.PLAYER_LEFT:
-            pass
-        elif packet_type == Package.GAME_COUNTDOWN:
-            pass
-        elif packet_type == Package.GAME_START:
-            self.controller.run()
-            pass
-
     def start_listening(self):
         '''Start the thread for listening'''
         threading.Thread(target=self.receive, daemon=True).start()

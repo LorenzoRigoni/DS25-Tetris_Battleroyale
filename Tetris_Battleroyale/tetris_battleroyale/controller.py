@@ -101,3 +101,6 @@ class TetrisController:
         #upodate the grids and piece of the players
         self.grids[playerNumber] = grid
         self.current_pieces[playerNumber] = current_piece
+
+    def rowReceived(self, lobby_id, player_id, player_name, target, rows):
+        pass

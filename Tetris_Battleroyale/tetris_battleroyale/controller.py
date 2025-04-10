@@ -8,9 +8,10 @@ from remote.client.client_game_manager import ClientGameManager
 from remote.server.server_game_manager import ServerGameManager
 
 class TetrisController:
+    current_lobby_id=0
     def __init__(self,ip,port,mode="client"):
         # Initialize the model, view, and game settings
-        self.model = TetrisModel()
+        self.model = TetrisModel(self)
         self.view = TetrisView()
         self.fall_speed = FALL_SPEED
         self.last_fall_time = pygame.time.get_ticks()
@@ -18,10 +19,12 @@ class TetrisController:
         self.last_move_time = pygame.time.get_ticks()
         self.move_cooldown = 200  # Cooldown for lateral movement (in milliseconds)
         if mode == "client":
-            self.client = ClientGameManager(0,"bruno",self,ip,port)
+            self.client = ClientGameManager(0,"bruno",self,ip,port)        
+            self.client.start_listening() 
         else:
-            self.server = ServerGameManager(self,ip,port,num_max_lobbies=1,num_max_players_per_lobby=10,num_min_players_per_lobby=2)
-
+            self.server = ServerGameManager(self,ip,port,1,10,2,self.current_lobby_id)
+            self.server.start_listening()  
+            
     def handle_events(self):
         # Handle user input events
         for event in pygame.event.get():
@@ -40,7 +43,7 @@ class TetrisController:
     grids = []
     current_pieces = []
     player_number = None
-    #TODO remove 4 as default value
+    #TODO remove 10 as default value also this is only for client, no server implementation yet
     def run(self,player_number = 10):
         self.player_number = player_number
         # Main game loop
@@ -78,10 +81,14 @@ class TetrisController:
                         if lines_cleared:
                             print(f"Lines cleared: {lines_cleared}")
                     self.last_fall_time = current_time
+                    self.client.send_game_state()
 
                 # Update the view
                 self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, game_over)
+                # Send the game state to the server
+                
             else:
+                self.send_defeat()
                 # Game over state
                 self.view.display_game_over()
                 # Wait for a key press to quit
@@ -101,3 +108,27 @@ class TetrisController:
         #upodate the grids and piece of the players
         self.grids[playerNumber] = grid
         self.current_pieces[playerNumber] = current_piece
+
+    def send_game_state(self):
+        # Send the game state to the server
+        if hasattr(self, 'client'):
+            self.client.send_game_state(self.model.grid, self.server.lobby_id, self.model.current_piece)
+        #TODO
+        elif hasattr(self, 'server'):
+            pass
+    def send_broken_row(self, target):
+        # Send the broken rows to the server
+        if hasattr(self, 'client'):
+            self.client.send_broken_row(self.server.lobby_id, target)
+        #TODO
+        elif hasattr(self, 'server'):
+            pass
+    def send_defeat(self):
+        # Send the defeat message to the server
+        if hasattr(self, 'client'):
+            self.client.send_defeat(self.server.lobby_id)
+        #TODO
+        elif hasattr(self, 'server'):
+            pass
+    
+    

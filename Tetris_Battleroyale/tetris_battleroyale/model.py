@@ -4,13 +4,15 @@ import random
 from vars import *
 
 class TetrisModel:
-    def __init__(self):
+    def __init__(self, controller,player_number=10):
         # Initialize the game grid and the current and next pieces
         self.grid = [[0 for _ in range(COLS)] for _ in range(ROWS)]
         self.current_piece = self.new_piece()
         self.next_piece = self.new_piece()
         self.hold_piece = None  # Pezzo in hold
         self.can_hold = True  # Flag per controllare se il pezzo può essere messo in hold
+        self.controller = controller  # Reference to the controller
+        self.player_number = player_number  # Player number (for multiplayer)
 
     def new_piece(self):
         # Define the shapes of the Tetris pieces
@@ -92,6 +94,8 @@ class TetrisModel:
     def clear_lines(self):
         # Clear any full lines and return the number of lines cleared
         lines_to_clear = [y for y in range(ROWS) if all(self.grid[y])]
+        if len(lines_to_clear) == 4:
+            self.controller.send_broken_row(self.player_number)  # Send the broken row to the server
         for y in lines_to_clear:
             del self.grid[y]
             self.grid.insert(0, [0 for _ in range(COLS)])

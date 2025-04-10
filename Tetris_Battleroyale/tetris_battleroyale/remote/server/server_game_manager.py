@@ -27,7 +27,7 @@ class ServerGameManager(Server):
                 if packet_type == Package.LEAVE_LOBBY:
                     self.handle_leave_lobby(packet, addr)
                 if packet_type == Package.SEND_ROW:
-                    self.send_broken_row(packet["lobby_id"], packet["player_id"], packet["target"], packet["rows"])
+                    self.send_broken_row(packet["lobby_id"], packet["player_id"], packet["target"])
                 elif packet_type == Package.UPDATE_STATE:
                     self.update_state(packet["lobby_id"], packet["player_id"], packet["grid_state"], packet["current_piece"])
                 elif packet_type == Package.PLAYER_DEFEATED:
@@ -36,13 +36,13 @@ class ServerGameManager(Server):
             except Exception as e:
                 print(f"Error in the receivment of a packet on the server: {e}")
 
-    def send_broken_row(self, lobby_id, from_player, to_player, lines):
+    def send_broken_row(self, lobby_id, from_player, to_player):
         '''Send to a player (or to all) the broken rows'''
         if to_player == None:
-            self.send_broadcast_message(lobby_id, from_player, Package.ROW_RECEIVED, lines = lines)
+            self.send_broadcast_message(lobby_id, from_player, Package.ROW_RECEIVED)
         else:
             if to_player in self.lobbies[lobby_id]["players"]:
-                self.send_message(Package.SEND_ROW, self.lobbies[lobby_id]["players"][to_player], lines = lines)
+                self.send_message(Package.SEND_ROW, self.lobbies[lobby_id]["players"][to_player])
 
     def update_state(self, lobby_id, player_id, grid_state, current_piece):
         '''Update the state of a player and send to all others players'''

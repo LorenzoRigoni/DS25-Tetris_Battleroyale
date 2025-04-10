@@ -4,13 +4,14 @@ import time
 from package import Package
 
 class Server:
-    def __init__(self, host, port, num_max_lobbies, num_max_players_per_lobby, num_min_players_per_lobby,controller):
+    def __init__(self, host, port, num_max_lobbies, num_max_players_per_lobby, num_min_players_per_lobby,controller,lobby_id):
         self.controller = controller
         self.host = host
         self.port = port
         self.num_max_lobbies = num_max_lobbies
         self.num_max_players_per_lobby = num_max_players_per_lobby
         self.num_min_players_per_lobby = num_min_players_per_lobby
+        self.lobby_id = lobby_id
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind((self.host, self.port))

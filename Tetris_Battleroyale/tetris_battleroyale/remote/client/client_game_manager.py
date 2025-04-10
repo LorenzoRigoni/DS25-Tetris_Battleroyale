@@ -43,12 +43,12 @@ class ClientGameManager(Client):
         '''Send the game state of the user to the server'''
         self.send(Package.UPDATE_STATE, player_id = self.player_id, grid = grid, lobby_id = lobby_id, current_piece = current_piece)
 
-    def send_broken_row(self, rows, lobby_id, target):
+    def send_broken_row(self, lobby_id, target):
         '''Send the broken rows to the server with the information for who is/are the targets'''
         if target != None:
-            self.send(Package.SEND_ROW, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name, target = target, rows = rows)
+            self.send(Package.SEND_ROW, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name, target = target)
         else:
-            self.send(Package.SEND_ROW, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name, rows = rows)
+            self.send(Package.SEND_ROW, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name)
 
     def send_defeat(self, lobby_id):
         '''Send the message to the server of a player who lost the game'''

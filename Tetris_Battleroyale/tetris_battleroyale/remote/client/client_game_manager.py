@@ -5,7 +5,7 @@ class ClientGameManager(Client):
     '''Manage the game functions of the users'''
 
     def __init__(self, player_id, player_name, controller, ip, port):
-        Client.__init__(self, controller.server_ip, controller.server_port, controller, ip, port)
+        Client.__init__(self, ip, port, controller, ip, port)
         self.player_id = player_id
         self.player_name = player_name
         self.lobbies = {}
@@ -27,6 +27,7 @@ class ClientGameManager(Client):
             target = data["target"]
             rows = data["rows"]
             #TODO: call to the method of controller for add the broken rows
+            self.controller.rowReceived(lobby_id, player_id, player_name, target, rows)
         #TODO We don't need this one, chief
         elif packet_type == Package.PLAYER_DEFEATED:
             lobby_id = data["lobby_id"]
@@ -37,8 +38,21 @@ class ClientGameManager(Client):
             lobby_id = data["lobby_id"]
             winner = data["winner"]
             #TODO: call to the method of controller for show a message with name of winner
+        elif packet_type == Package.GET_LOBBIES:
+            pass
+        elif packet_type == Package.JOIN_LOBBY:
+            pass
+        elif packet_type == Package.PLAYER_JOINED:
+            pass
+        elif packet_type == Package.LEAVE_LOBBY:
+            pass
+        elif packet_type == Package.PLAYER_LEFT:
+            pass
+        elif packet_type == Package.GAME_COUNTDOWN:
+            pass
+        elif packet_type == Package.GAME_START:
+            self.controller.run()
         
-
     def send_game_state(self, grid, lobby_id, current_piece):
         '''Send the game state of the user to the server'''
         self.send(Package.UPDATE_STATE, player_id = self.player_id, grid = grid, lobby_id = lobby_id, current_piece = current_piece)

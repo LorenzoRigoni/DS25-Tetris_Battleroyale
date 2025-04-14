@@ -3,6 +3,7 @@ import msgpack
 class Package:
     """Manage the content and the delivery of packages"""
     
+    SHAKE_HAND = "shake_hand"
     GET_LOBBIES = "get_lobbies"
     LOBBY_LIST = "lobby_list"
     JOIN_LOBBY = "join_lobby"

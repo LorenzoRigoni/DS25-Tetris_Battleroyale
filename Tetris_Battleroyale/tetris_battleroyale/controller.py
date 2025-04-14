@@ -22,7 +22,7 @@ class TetrisController:
             self.client = ClientGameManager(0,"bruno",self,ip,port)        
             self.client.start_listening() 
         else:
-            self.server = ServerGameManager(self,ip,port,1,10,2,self.current_lobby_id)
+            self.server = ServerGameManager(self,ip,port)
             self.server.start_listening()  
             
     def handle_events(self):

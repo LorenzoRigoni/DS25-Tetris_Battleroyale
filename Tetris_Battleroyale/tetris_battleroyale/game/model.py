@@ -1,7 +1,7 @@
 # model.py
 
 import random
-from vars import *
+from utils.vars import *
 
 class TetrisModel:
     def __init__(self, controller,player_number=10):

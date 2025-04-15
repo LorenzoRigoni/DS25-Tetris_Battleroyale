@@ -1,7 +1,7 @@
 # game_view.py
 
 import pygame
-from vars import *
+from utils.vars import *
 
 
 class GameView:

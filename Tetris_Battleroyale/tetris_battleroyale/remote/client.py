@@ -1,12 +1,16 @@
+import socket
 import threading
-from client import Client
-from package import Package
+from utils.package import Package
 
-class ClientGameManager(Client):
-    '''Manage the game functions of the users'''
+class Client:
+    '''Manage the communication of the client (only non-game aspects)'''
 
-    def __init__(self, player_name, controller, ip, port):
-        Client.__init__(self, ip, port, player_name)
+    def __init__(self, player_name, controller):
+        self.player_name = player_name
+        self.player_id = 0
+        self.server_addr = ("127.0.0.1", 12345)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.running = True
         self.controller = controller
         self.player_name = player_name
         self.send(Package.SHAKE_HAND)
@@ -15,43 +19,41 @@ class ClientGameManager(Client):
         '''Receive a packet from the server'''
         while self.running:
             try:
-                package, _ = self.socket.recvfrom(1024)
-                data = Package.decode(package)
-                self.handle_data(data)
+                package, _ = self.socket.recvfrom(4096)
+                type, data = Package.decode(package)
+                self.handle_data(type, data)
             except Exception as e:
                 print(f"Client error: {e}")
 
-    def start_listening(self):
+    def start(self):
         '''Start the thread for listening'''
         threading.Thread(target=self.receive, daemon=True).start()    
 
-    def handle_data(self, data):
+    def handle_data(self, type, data):
         '''Handle the data received from the server'''
-        packet_type = data.get("type")
-
-        if packet_type == Package.SHAKE_HAND:
+        if type == Package.SHAKE_HAND:
             self.shake_hand(int(data["player_id"]))
-        if packet_type == Package.UPDATE_STATE:
+        if type == Package.UPDATE_STATE:
             self.receive_game_state(data["grid_state"], int(data["player_id"]), data["player_name"], data["current_piece"])
-        elif packet_type == Package.ROW_RECEIVED:
+        elif type == Package.ROW_RECEIVED:
             self.receive_broken_row(data["from_player"], data["row"])
-        elif packet_type == Package.PLAYER_DEFEATED:
+        elif type == Package.PLAYER_DEFEATED:
             self.receive_defeat(int(data["player_id"]), data["player_name"])
-        elif packet_type == Package.GAME_OVER:
+        elif type == Package.GAME_OVER:
             self.receive_game_over(data["winner"])
-        elif packet_type == Package.GET_LOBBIES:
+        elif type == Package.GET_LOBBIES:
             self.receive_lobbies(data["lobbies_info"])
-        elif packet_type == Package.JOIN_LOBBY:
+        elif type == Package.JOIN_LOBBY:
             self.receive_confirm_join_lobby()
-        elif packet_type == Package.PLAYER_JOINED:
+        elif type == Package.PLAYER_JOINED:
             self.receive_player_joined_lobby(data["player_name"])
-        elif packet_type == Package.LEAVE_LOBBY:
+        elif type == Package.LEAVE_LOBBY:
             self.receive_confirm_leave_lobby()
-        elif packet_type == Package.PLAYER_LEFT:
+        elif type == Package.PLAYER_LEFT:
             self.receive_player_left_lobby(data["player_name"])
-        elif packet_type == Package.GAME_COUNTDOWN:
+        elif type == Package.GAME_COUNTDOWN:
             self.receive_game_countdown()
-        elif packet_type == Package.GAME_START:
+        elif type == Package.GAME_START:
             self.controller.run()
         
     def send_game_state(self, grid, lobby_id, current_piece):
@@ -88,3 +90,51 @@ class ClientGameManager(Client):
         '''Receive the name of the winner of the game'''
         #TODO: implement in controller the method to visualize the winner
         pass
+
+    def send(self, packet_type, **kwargs):
+        '''Send a packet to the server'''
+        data = Package.encode(packet_type, **kwargs)
+        self.socket.sendto(data, self.server_addr)
+
+    def shake_hand(self, player_id):
+        self.player_id = player_id
+
+    def get_lobbies(self):
+        '''Request the lobbies'''
+        self.send(Package.GET_LOBBIES)
+
+    def join_lobby(self, lobby_id):
+        '''Try to enter in a lobby'''
+        self.send(Package.JOIN_LOBBY, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name)
+
+    def receive_lobbies(self, lobbies_info):
+        '''Receive the info of the lobbies'''
+        #TODO: implement in controller the method to visualize the lobbies
+        pass
+
+    def receive_confirm_join_lobby(self):
+        '''Receive the message of confirm for join the lobby'''
+        #TODO: implement in controller the method to visualize the message
+        pass
+
+    def receive_player_joined_lobby(self, player_name):
+        '''Receive the message of a player who joined the lobby'''
+        #TODO: implement in controller the method to visualize the message
+
+    def receive_confirm_leave_lobby(self):
+        '''Receive the message of confirm for leave the lobby'''
+        #TODO: implement in controller the method to visualize the message
+        pass
+
+    def receive_player_left_lobby(self, player_name):
+        '''Receive the message of a player who left the lobby'''
+        #TODO: implement in controller the method to visualize the message
+
+    def receive_game_countdown(self):
+        '''Receive the message that the game is starting'''
+        #TODO: implement in controller the method to visualize the message
+
+    def close_connection(self):
+        '''Close the client connection'''
+        self.running = False
+        self.socket.close()

@@ -4,6 +4,7 @@ class Package:
     """Manage the content and the delivery of packages"""
     
     SHAKE_HAND = "shake_hand"
+    PING = "ping"
     GET_LOBBIES = "get_lobbies"
     LOBBY_LIST = "lobby_list"
     JOIN_LOBBY = "join_lobby"
@@ -23,10 +24,11 @@ class Package:
     @staticmethod
     def encode(packet_type, **kwargs):
         """Create the package"""
-        packet = {"type": packet_type, **kwargs}
+        packet = {"type": packet_type, "data": kwargs}
         return msgpack.packb(packet)
 
     @staticmethod
     def decode(data):
         """Decode the recived package"""
-        return msgpack.unpackb(data)
+        packet = msgpack.unpack(data)
+        return packet["type"], packet["data"]

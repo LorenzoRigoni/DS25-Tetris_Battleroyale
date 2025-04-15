@@ -2,7 +2,7 @@
 
 import pygame
 from game_view import GameView
-from vars import *
+from utils.vars import *
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 800

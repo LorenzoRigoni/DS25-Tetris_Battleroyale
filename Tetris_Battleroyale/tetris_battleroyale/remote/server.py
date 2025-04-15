@@ -16,6 +16,7 @@ class Server:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind((self.host, self.port))
         self.socket.settimeout(0.5)
+        self.last_seen = {}
 
         self.lobbies = [Lobby(i) for i in range(self.num_max_lobbies)]
         self.id_counter = 0
@@ -24,6 +25,7 @@ class Server:
     def start(self):
         self.running = True
         threading.Thread(target=self.handle_request, daemon=True).start()
+        threading.Thread(target=self.timeout_monitor, daemon=True).start()
 
     def handle_request(self):
         '''Handle the client requests'''
@@ -34,13 +36,15 @@ class Server:
 
                 if p_type == Package.SHAKE_HAND:
                     self.shake_hand(addr)
-                if p_type == Package.GET_LOBBIES:
+                elif p_type == Package.HEARTBEAT:
+                    self.last_seen[addr] = time.time()
+                elif p_type == Package.GET_LOBBIES:
                     self.send_available_lobbies(addr)
-                if p_type == Package.JOIN_LOBBY:
+                elif p_type == Package.JOIN_LOBBY:
                     self.handle_join_lobby(addr, int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"])
-                if p_type == Package.LEAVE_LOBBY:
+                elif p_type == Package.LEAVE_LOBBY:
                     self.handle_leave_lobby(addr, int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"])
-                if p_type == Package.SEND_ROW:
+                elif p_type == Package.SEND_ROW:
                     self.send_broken_row(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"], p_data["target"], p_data["row"])
                 elif p_type == Package.UPDATE_STATE:
                     self.update_state(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"], p_data["grid_state"], p_data["current_piece"])
@@ -56,6 +60,16 @@ class Server:
         actual_counter = self.id_counter
         self.id_counter = self.id_counter + 1
         self.send_message(Package.SHAKE_HAND, addr, player_id = actual_counter)
+
+    def timeout_monitor(self):
+        '''Checks if the clients are connected yet with an heartbeat packet'''
+        while True:
+            now = time.time()
+            for client_addr, last_time in list(self.last_seen.items()):
+                if now - last_time > 5:
+                    #TODO: implement the disconnection of the player
+                    pass
+            time.sleep(1)
 
     def send_broken_row(self, lobby_id, from_player, from_name, to_player, row):
         '''Send to a player (or to all) the broken rows'''
@@ -121,6 +135,7 @@ class Server:
 
         self.send_message(Package.LEAVE_LOBBY, addr)
         self.send_broadcast_message(lobby_id, player_id, Package.PLAYER_LEFT, player_name = player_name)
+        self.handle_defeat(lobby_id, player_id, player_name)
 
     def start_game_countdown(self, lobby_id):
         '''Activate a 5 second countdown when a lobby is started'''

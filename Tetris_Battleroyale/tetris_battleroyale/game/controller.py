@@ -1,8 +1,8 @@
 # controller.py
 
 import pygame
-from model import TetrisModel
-from view import TetrisView
+from game.model import TetrisModel
+from game.view import TetrisView
 from utils.vars import *
 
 class TetrisController:

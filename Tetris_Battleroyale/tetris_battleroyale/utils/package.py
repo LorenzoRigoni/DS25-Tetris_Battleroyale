@@ -5,6 +5,7 @@ class Package:
     
     SHAKE_HAND = "shake_hand"
     PING = "ping"
+    HEARTBEAT = "heartbeat"
     GET_LOBBIES = "get_lobbies"
     LOBBY_LIST = "lobby_list"
     JOIN_LOBBY = "join_lobby"

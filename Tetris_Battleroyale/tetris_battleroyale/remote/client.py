@@ -1,5 +1,6 @@
 import socket
 import threading
+import time
 from utils.package import Package
 
 class Client:
@@ -24,10 +25,20 @@ class Client:
                 self.handle_data(type, data)
             except Exception as e:
                 print(f"Client error: {e}")
+                self.running = False
 
     def start(self):
         '''Start the thread for listening'''
-        threading.Thread(target=self.receive, daemon=True).start()    
+        threading.Thread(target=self.receive, daemon=True).start()
+        threading.Thread(target=self.send_heartbeat, daemon=True).start()
+
+    def send_heartbeat(self):
+        '''Sends the special packet "heartbeat" to the server'''
+        while self.running:
+            try:
+                self.send(Package.HEARTBEAT)
+            except Exception:
+                self.running = False
 
     def handle_data(self, type, data):
         '''Handle the data received from the server'''

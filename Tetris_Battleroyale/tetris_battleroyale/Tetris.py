@@ -1,6 +1,6 @@
 # Tetris.py
 import sys
-from controller import TetrisController
+from game.controller import TetrisController
 
 # Initialize and run the game
 

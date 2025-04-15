@@ -1,7 +1,7 @@
 # view.py
 
 import pygame
-from game_view import GameView
+from game.game_view import GameView
 from utils.vars import *
 
 SCREEN_WIDTH = 800

@@ -60,7 +60,41 @@ class TetrisLauncher:
         client.start()
         controller.run()
 
+    def run(self):
+        input_rect = pygame.Rect(100, 120, 200, 40)
+        button_rect = pygame.Rect(100, 190, 200, 50)
+
+        while self.running:
+            self.screen.fill((30, 30, 30))
+            title = self.font.render("TETRIS BATTLEROYALE", True, (255, 255, 255))
+            self.screen.blit(title, (WIDTH//2 - title.get_width()//2, 40))
+
+            mouse_pos = pygame.mouse.get_pos()
+            click = False
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if input_rect.collidepoint(event.pos):
+                        self.active_input = True
+                    else:
+                        self.active_input = False
+                    if event.button == 1 and button_rect.collidepoint(mouse_pos):
+                        if self.name.strip():
+                            self.start()
+                            self.running = False
+                elif event.type == pygame.KEYDOWN and self.active_input:
+                    if event.key == pygame.K_BACKSPACE:
+                        self.name = self.name[:-1]
+                    elif len(self.name) < 16 and event.unicode.isprintable():
+                        self.name += event.unicode
+
+            hovered = button_rect.collidepoint(mouse_pos)
+            self.draw_input_box(input_rect)
+            self.draw_button("Enter", button_rect, hovered)
+            pygame.display.flip()
 
 if __name__ == "__main__":
     launcher = TetrisLauncher()
-    launcher.start()
+    launcher.run()

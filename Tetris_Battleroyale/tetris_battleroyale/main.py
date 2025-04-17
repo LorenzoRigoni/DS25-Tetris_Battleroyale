@@ -2,6 +2,7 @@ import pygame
 import subprocess
 import socket
 import time
+from remote.server import Server
 from remote.client import Client
 from game.controller import TetrisController
 from utils.package import Package
@@ -39,6 +40,7 @@ class TetrisLauncher:
             sock.settimeout(1.0)
             ping = Package.encode(Package.PING)
             sock.sendto(ping, (ip, port))
+            data, addr = sock.recvfrom(4096)
             sock.close()
             return True
         except Exception:
@@ -58,7 +60,7 @@ class TetrisLauncher:
         controller = TetrisController()
         client = Client(self.name, controller)
         client.start()
-        controller.run()
+        #controller.run()
 
     def run(self):
         input_rect = pygame.Rect(100, 120, 200, 40)

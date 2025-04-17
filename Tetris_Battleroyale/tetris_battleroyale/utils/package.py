@@ -1,4 +1,4 @@
-import msgpack
+from bson import BSON
 
 class Package:
     """Manage the content and the delivery of packages"""
@@ -26,10 +26,10 @@ class Package:
     def encode(packet_type, **kwargs):
         """Create the package"""
         packet = {"type": packet_type, "data": kwargs}
-        return msgpack.packb(packet)
+        return BSON.encode(packet)
 
     @staticmethod
     def decode(data):
         """Decode the recived package"""
-        packet = msgpack.unpack(data)
+        packet = BSON(data).decode()
         return packet["type"], packet["data"]

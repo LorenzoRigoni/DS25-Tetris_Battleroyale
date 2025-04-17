@@ -11,7 +11,6 @@ class Server:
         self.num_max_lobbies = 10
         self.num_max_players_per_lobby = 10
         self.num_min_players_per_lobby = 4
-        self.running = False
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind((self.host, self.port))
@@ -21,39 +20,38 @@ class Server:
         self.lobbies = [Lobby(i) for i in range(self.num_max_lobbies)]
         self.id_counter = 0
         self.players_ids_names = {}
-
-    def start(self):
-        self.running = True
-        threading.Thread(target=self.handle_request, daemon=True).start()
         threading.Thread(target=self.timeout_monitor, daemon=True).start()
 
-    def handle_request(self):
-        '''Handle the client requests'''
-        while self.running:
+    def start(self):
+        '''Starts the server'''
+        while True:
             try:
                 data, addr = self.socket.recvfrom(4096)
                 p_type, p_data = Package.decode(data)
-
-                if p_type == Package.SHAKE_HAND:
-                    self.shake_hand(addr)
-                elif p_type == Package.HEARTBEAT:
-                    self.last_seen[addr] = time.time()
-                elif p_type == Package.GET_LOBBIES:
-                    self.send_available_lobbies(addr)
-                elif p_type == Package.JOIN_LOBBY:
-                    self.handle_join_lobby(addr, int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"])
-                elif p_type == Package.LEAVE_LOBBY:
-                    self.handle_leave_lobby(addr, int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"])
-                elif p_type == Package.SEND_ROW:
-                    self.send_broken_row(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"], p_data["target"], p_data["row"])
-                elif p_type == Package.UPDATE_STATE:
-                    self.update_state(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"], p_data["grid_state"], p_data["current_piece"])
-                elif p_type == Package.PLAYER_DEFEATED:
-                    self.handle_defeat(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"])
+                self.handle_request(addr, p_type, p_data)
             except socket.timeout:
                 continue
             except Exception as e:
                 print(f"Error in the receivment of a packet on the server: {e}")
+
+    def handle_request(self, addr, p_type, p_data):
+        '''Handle the client requests'''
+        if p_type == Package.SHAKE_HAND:
+            self.shake_hand(addr)
+        elif p_type == Package.HEARTBEAT:
+            self.last_seen[addr] = time.time()
+        elif p_type == Package.GET_LOBBIES:
+            self.send_available_lobbies(addr)
+        elif p_type == Package.JOIN_LOBBY:
+            self.handle_join_lobby(addr, int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"])
+        elif p_type == Package.LEAVE_LOBBY:
+            self.handle_leave_lobby(addr, int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"])
+        elif p_type == Package.SEND_ROW:
+            self.send_broken_row(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"], p_data["target"], p_data["row"])
+        elif p_type == Package.UPDATE_STATE:
+            self.update_state(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"], p_data["grid_state"], p_data["current_piece"])
+        elif p_type == Package.PLAYER_DEFEATED:
+            self.handle_defeat(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"])
 
     def shake_hand(self, addr):
         '''Defines the first iteraction between client and server. The server sends to the client a packet with the id of the player'''

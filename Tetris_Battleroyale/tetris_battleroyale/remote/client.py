@@ -15,32 +15,29 @@ class Client:
         self.controller = controller
         self.player_name = player_name
         self.send(Package.SHAKE_HAND)
+        threading.Thread(target=self.send_heartbeat, daemon=True).start()
 
-    def receive(self):
-        '''Receive a packet from the server'''
+    def start(self):
+        '''Starts the client'''
         while self.running:
             try:
                 package, _ = self.socket.recvfrom(4096)
                 type, data = Package.decode(package)
-                self.handle_data(type, data)
+                self.handle_packet(type, data)
             except Exception as e:
                 print(f"Client error: {e}")
                 self.running = False
-
-    def start(self):
-        '''Start the thread for listening'''
-        threading.Thread(target=self.receive, daemon=True).start()
-        threading.Thread(target=self.send_heartbeat, daemon=True).start()
 
     def send_heartbeat(self):
         '''Sends the special packet "heartbeat" to the server'''
         while self.running:
             try:
+                print("Invio heartbeat")
                 self.send(Package.HEARTBEAT)
             except Exception:
                 self.running = False
 
-    def handle_data(self, type, data):
+    def handle_packet(self, type, data):
         '''Handle the data received from the server'''
         if type == Package.SHAKE_HAND:
             self.shake_hand(int(data["player_id"]))

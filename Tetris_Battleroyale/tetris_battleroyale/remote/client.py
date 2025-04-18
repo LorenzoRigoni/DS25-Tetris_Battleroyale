@@ -79,20 +79,17 @@ class Client:
         '''Send the message to the server that the player has lost the game'''
         self.send(Package.PLAYER_DEFEATED, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name)
 
-    def receive_game_state(self, grid_state, player_id, player_name, current_piece):
+    def receive_game_state(self, grid_state, player_id, current_piece):
         '''Receive the game state of the users from the server'''
-        #TODO: implement in controller the method to visualize the other grids
-        pass
+        self.controller.updateEnemies(player_id, grid_state, current_piece)
 
-    def receive_broken_row(self, name_sender, row):
+    def receive_broken_row(self):
         '''Receive the broken row from the server'''
-        #TODO: implement in controller the method to add the broken row to his grid
-        pass
+        self.controller.receive_broken_line()
 
     def receive_defeat(self, player_id, player_name):
         '''Receive the message from the server of a player who lost the game'''
-        #TODO: implement in controller the method to visualize the message for the player defeated
-        pass
+        self.controller.receive_defeat(player_id)
 
     def receive_game_over(self, winner_name):
         '''Receive the name of the winner of the game'''

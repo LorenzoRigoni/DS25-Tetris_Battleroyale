@@ -76,7 +76,7 @@ class TetrisController:
                     self.client.send_game_state()
 
                 # Update the view
-                self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, game_over)
+                self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, game_over,self.defeats)
                 # Send the game state to the server
                 
             else:
@@ -97,6 +97,7 @@ class TetrisController:
         if len(self.grids) < self.player_number:
             self.grids = [None]*self.player_number
             self.current_pieces = [None]*self.player_number
+            self.defeats = [False]*self.player_number
         #upodate the grids and piece of the players
         self.grids[playerNumber] = grid
         self.current_pieces[playerNumber] = current_piece
@@ -122,5 +123,8 @@ class TetrisController:
         #TODO
         elif hasattr(self, 'server'):
             pass
+    def receive_broken_line(self):
+        self.model.add_broken_line()
     
-    
+    def receive_defeat(self, player_id, player_name):
+        self.defeats[player_id] = True

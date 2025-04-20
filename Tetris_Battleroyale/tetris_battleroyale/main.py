@@ -54,13 +54,15 @@ class TetrisLauncher:
         ip = "127.0.0.1"
         port = 12345
 
-        if not self.is_server_running(ip, port):
-            self.start_server()
+        #if not self.is_server_running(ip, port):
+            #self.start_server()
 
         controller = TetrisController()
         client = Client(self.name, controller)
-        client.start()
-        #controller.run()
+        controller.client = client
+        #client.start()
+        #TODO questo va tolto che sta nel client
+        controller.run()
 
     def run(self):
         input_rect = pygame.Rect(100, 120, 200, 40)
@@ -97,6 +99,5 @@ class TetrisLauncher:
             self.draw_button("Enter", button_rect, hovered)
             pygame.display.flip()
 
-if __name__ == "__main__":
-    launcher = TetrisLauncher()
-    launcher.run()
+launcher = TetrisLauncher()
+launcher.run()

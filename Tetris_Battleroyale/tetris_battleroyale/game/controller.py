@@ -7,7 +7,10 @@ from utils.vars import *
 
 class TetrisController:
     current_lobby_id=0
-    def __init__(self):
+    def __init__(self,player_number = 9):
+        self.running = True
+        self.game_over = False 
+        self.player_number = player_number
         # Initialize the model, view, and game settings
         self.model = TetrisModel(self)
         self.view = TetrisView()
@@ -16,12 +19,18 @@ class TetrisController:
         self.fast_fall = False
         self.last_move_time = pygame.time.get_ticks()
         self.move_cooldown = 200  # Cooldown for lateral movement (in milliseconds)
+
+        
+        #initilize grids and pieces
+        self.grids = [None]*self.player_number
+        self.current_pieces = [None]*self.player_number
+        self.defeats = [False]*self.player_number
             
     def handle_events(self):
         # Handle user input events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return False
+                self.running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     self.model.rotate_piece_intelligently()
@@ -31,20 +40,11 @@ class TetrisController:
                     self.model.hold_current_piece()
                 elif event.key == pygame.K_m:  # Add a gray line with a random hole
                     self.model.add_gray_line_with_hole()
-        return True
-    grids = []
-    current_pieces = []
-    player_number = None
     #TODO remove 10 as default value also this is only for client, no server implementation yet
-    def run(self,player_number = 10):
-        self.player_number = player_number
-        # Main game loop
-        running = True
-        game_over = False  # Flag to track game over state
-        
-        while running:
-            if not game_over:
-                running = self.handle_events()
+    def run(self):
+        while self.running:
+            if not self.game_over:
+                self.handle_events()
 
                 keys = pygame.key.get_pressed()
                 current_time = pygame.time.get_ticks()
@@ -73,10 +73,10 @@ class TetrisController:
                         if lines_cleared:
                             print(f"Lines cleared: {lines_cleared}")
                     self.last_fall_time = current_time
-                    self.client.send_game_state()
+                    self.client.send_game_state(self.model.grid, self.model.current_piece)
 
                 # Update the view
-                self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, game_over,self.defeats)
+                self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, self.game_over,self.defeats)
                 # Send the game state to the server
                 
             else:
@@ -93,11 +93,6 @@ class TetrisController:
 
         pygame.quit()
     def updateEnemies(self, playerNumber, grid, current_piece):
-        #initilize grids and pieces
-        if len(self.grids) < self.player_number:
-            self.grids = [None]*self.player_number
-            self.current_pieces = [None]*self.player_number
-            self.defeats = [False]*self.player_number
         #upodate the grids and piece of the players
         self.grids[playerNumber] = grid
         self.current_pieces[playerNumber] = current_piece
@@ -112,14 +107,14 @@ class TetrisController:
     def send_broken_row(self, target):
         # Send the broken rows to the server
         if hasattr(self, 'client'):
-            self.client.send_broken_row(self.server.lobby_id, target)
+            self.client.send_broken_row(target)
         #TODO
         elif hasattr(self, 'server'):
             pass
     def send_defeat(self):
         # Send the defeat message to the server
         if hasattr(self, 'client'):
-            self.client.send_defeat(self.server.lobby_id)
+            self.client.send_defeat()
         #TODO
         elif hasattr(self, 'server'):
             pass

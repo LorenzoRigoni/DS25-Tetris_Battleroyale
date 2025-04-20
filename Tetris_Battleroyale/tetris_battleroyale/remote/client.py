@@ -68,12 +68,12 @@ class Client:
         '''Send the game state of the user to the server'''
         self.send(Package.UPDATE_STATE, lobby_id = 3, player_id = self.player_id, player_name = self.player_name, grid_state = grid, current_piece = current_piece)
     #TODO lobby_id deve averlo il client, non in controller
-    def send_broken_row(self, lobby_id=3, target=target, row=row):
+    def send_broken_row(self, target,row):
         '''Send the broken rows to the server with the information for who is/are the targets'''
         if target != None:
-            self.send(Package.SEND_ROW, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name, target = target, row = row)
+            self.send(Package.SEND_ROW, lobby_id = 3, player_id = self.player_id, player_name = self.player_name, target = target, row = row)
         else:
-            self.send(Package.SEND_ROW, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name, row = row)
+            self.send(Package.SEND_ROW, lobby_id = 3, player_id = self.player_id, player_name = self.player_name, row = row)
     #TODO lobby_id deve averlo il client, non in controller
     def send_defeat(self, lobby_id=3):
         '''Send the message to the server that the player has lost the game'''

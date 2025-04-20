@@ -41,9 +41,8 @@ class TetrisView:
                 continue
             x = ((i-main_passed) % 2) * small_width
             y = ((i-main_passed)// 2) * small_height
-
             # Update the game view on its own surface
-            game_view.update(grids[i-main_passed], current_piece[i-main_passed], next_piece, hold_piece, game_over[i-main_passed])
+            game_view.update(grids[i-main_passed], current_pieces[i-main_passed], next_piece, hold_piece, games_over[i-main_passed])
 
             # Blit the game view's surface onto the main screen
             self.screen.blit(game_surface, (x, y))

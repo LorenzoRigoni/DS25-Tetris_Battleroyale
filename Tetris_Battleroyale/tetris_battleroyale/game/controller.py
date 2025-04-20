@@ -43,6 +43,12 @@ class TetrisController:
     #TODO remove 10 as default value also this is only for client, no server implementation yet
     def run(self):
         while self.running:
+            #update enemies with random values for testing
+            for i in range(self.player_number-1):
+                if self.grids[i] == None:
+                    self.grids[i] = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+                    self.current_pieces[i] = {'shape': [[1, 1, 1], [0, 1, 0]], 'color': (255, 0, 0), 'x': 3, 'y': 0}
+                    self.defeats[i] = False
             if not self.game_over:
                 self.handle_events()
 

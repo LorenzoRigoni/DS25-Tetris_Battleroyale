@@ -47,9 +47,9 @@ class Server:
         elif p_type == Package.LEAVE_LOBBY:
             self.handle_leave_lobby(addr, int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"])
         elif p_type == Package.SEND_ROW:
-            self.send_broken_row(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"], p_data["target"], p_data["row"])
+            self.send_broken_row(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["target"])
         elif p_type == Package.UPDATE_STATE:
-            self.update_state(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"], p_data["grid_state"], p_data["current_piece"])
+            self.update_state(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["grid_state"], p_data["current_piece"])
         elif p_type == Package.PLAYER_DEFEATED:
             self.handle_defeat(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"])
 
@@ -69,10 +69,10 @@ class Server:
                     pass
             time.sleep(1)
 
-    def send_broken_row(self, lobby_id, from_player, from_name, to_player, row):
+    def send_broken_row(self, lobby_id, from_player, to_player):
         '''Send to a player (or to all) the broken rows'''
         if to_player == None:
-            self.send_broadcast_message(lobby_id, from_player, Package.ROW_RECEIVED, from_player = from_name, row = row)
+            self.send_broadcast_message(lobby_id, from_player, Package.ROW_RECEIVED)
         else:
             "TODO: implement the version with a target"
 
@@ -80,7 +80,7 @@ class Server:
         '''Update the state of a player and send to all others players'''
         if lobby_id in self.lobbies and player_id in self.lobbies[lobby_id].get_players():
             self.lobbies[lobby_id].update_game_state(grid_state)
-            self.send_broadcast_message(lobby_id, Package.UPDATE_STATE, grid_state = grid_state, player_id = player_id, player_name = player_name, current_piece = current_piece)
+            self.send_broadcast_message(lobby_id, Package.UPDATE_STATE, grid_state = grid_state, player_id = player_id, current_piece = current_piece)
 
     def handle_defeat(self, lobby_id, player_id, player_name):
         '''Manage the defeat of a player and checks if the game is over'''

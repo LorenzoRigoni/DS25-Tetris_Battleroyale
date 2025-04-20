@@ -32,7 +32,7 @@ class Client:
         '''Sends the special packet "heartbeat" to the server'''
         while self.running:
             try:
-                print("Invio heartbeat")
+                #print("Invio heartbeat")
                 self.send(Package.HEARTBEAT)
             except Exception:
                 self.running = False
@@ -63,19 +63,19 @@ class Client:
             self.receive_game_countdown()
         elif type == Package.GAME_START:
             self.controller.run()
-        
-    def send_game_state(self, grid, lobby_id, current_piece):
+    #TODO lobby_id deve averlo il client, non in controller
+    def send_game_state(self, grid,current_piece):
         '''Send the game state of the user to the server'''
-        self.send(Package.UPDATE_STATE, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name, grid_state = grid, current_piece = current_piece)
-
-    def send_broken_row(self, lobby_id, target, row):
+        self.send(Package.UPDATE_STATE, lobby_id = 3, player_id = self.player_id, player_name = self.player_name, grid_state = grid, current_piece = current_piece)
+    #TODO lobby_id deve averlo il client, non in controller
+    def send_broken_row(self, lobby_id=3, target=target, row=row):
         '''Send the broken rows to the server with the information for who is/are the targets'''
         if target != None:
             self.send(Package.SEND_ROW, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name, target = target, row = row)
         else:
             self.send(Package.SEND_ROW, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name, row = row)
-
-    def send_defeat(self, lobby_id):
+    #TODO lobby_id deve averlo il client, non in controller
+    def send_defeat(self, lobby_id=3):
         '''Send the message to the server that the player has lost the game'''
         self.send(Package.PLAYER_DEFEATED, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name)
 

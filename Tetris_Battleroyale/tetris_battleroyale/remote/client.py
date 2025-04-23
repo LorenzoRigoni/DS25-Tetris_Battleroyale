@@ -15,7 +15,7 @@ class Client:
         self.controller = controller
         self.player_name = player_name
         self.send(Package.SHAKE_HAND)
-        threading.Thread(target=self.send_heartbeat, daemon=True).start()
+        #threading.Thread(target=self.handle_costant_sends, daemon=True).start()
 
     def start(self):
         '''Starts the client'''
@@ -28,14 +28,20 @@ class Client:
                 print(f"Client error: {e}")
                 self.running = False
 
-    def send_heartbeat(self):
-        '''Sends the special packet "heartbeat" to the server'''
+    def handle_costant_sends(self):
+        
         while self.running:
-            try:
-                #print("Invio heartbeat")
-                self.send(Package.HEARTBEAT)
+            try:        
+                print("Invio heartbeat")
+                self.send_heartbeat()
+                #TODo far bene
+                self.send_game_state(self.controller.grid, 3, self.controller.current_piece)
             except Exception:
                 self.running = False
+
+    def send_heartbeat(self):
+        '''Sends the special packet "heartbeat" to the server'''
+        self.send(Package.HEARTBEAT)
 
     def handle_packet(self, type, data):
         '''Handle the data received from the server'''
@@ -64,9 +70,11 @@ class Client:
         elif type == Package.GAME_START:
             self.controller.run()
     #TODO lobby_id deve averlo il client, non in controller
-    def send_game_state(self, grid,current_piece):
+    def send_game_state(self, grid,lobby_id,current_piece):
         '''Send the game state of the user to the server'''
-        self.send(Package.UPDATE_STATE, lobby_id = 3, player_id = self.player_id, player_name = self.player_name, grid_state = grid, current_piece = current_piece)
+        print(f"Sending game state: ")
+        self.send(Package.UPDATE_STATE, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name, grid_state = grid, current_piece = current_piece)
+        print(f"sent")
     #TODO lobby_id deve averlo il client, non in controller
     def send_broken_row(self, target,row):
         '''Send the broken rows to the server with the information for who is/are the targets'''
@@ -81,6 +89,7 @@ class Client:
 
     def receive_game_state(self, grid_state, player_id, current_piece):
         '''Receive the game state of the users from the server'''
+        print(f"Received game state from player {player_id}: {grid_state}")
         self.controller.updateEnemies(player_id, grid_state, current_piece)
 
     def receive_broken_row(self):

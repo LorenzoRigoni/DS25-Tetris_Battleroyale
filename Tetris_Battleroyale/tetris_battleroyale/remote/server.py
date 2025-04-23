@@ -13,7 +13,6 @@ class Server:
         self.num_min_players_per_lobby = 4
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.bind((self.host, self.port))
         self.socket.settimeout(0.5)
         self.last_seen = {}
 
@@ -76,7 +75,7 @@ class Server:
         else:
             "TODO: implement the version with a target"
 
-    def update_state(self, lobby_id, player_id, player_name, grid_state, current_piece):
+    def update_state(self, lobby_id, player_id, grid_state, current_piece):
         '''Update the state of a player and send to all others players'''
         if lobby_id in self.lobbies and player_id in self.lobbies[lobby_id].get_players():
             self.lobbies[lobby_id].update_game_state(grid_state)

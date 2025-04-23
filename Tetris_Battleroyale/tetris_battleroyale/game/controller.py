@@ -25,6 +25,9 @@ class TetrisController:
         self.grids = [None]*self.player_number
         self.current_pieces = [None]*self.player_number
         self.defeats = [False]*self.player_number
+        self.grid = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+        self.current_piece = {'shape': [[1, 1, 1], [0, 1, 0]], 'color': (255, 0, 0), 'x': 3, 'y': 0}
+        self.next_piece = {'shape': [[1, 1, 1], [0, 1, 0]], 'color': (255, 0, 0), 'x': 3, 'y': 0}
 
         for i in range(self.player_number-1):
                 if self.grids[i] == None:
@@ -81,7 +84,7 @@ class TetrisController:
                         if lines_cleared:
                             print(f"Lines cleared: {lines_cleared}")
                     self.last_fall_time = current_time
-                    self.client.send_game_state(self.model.grid, self.model.current_piece)
+                    self.client.send_game_state(self.model.grid, 3, self.model.current_piece)
 
                 # Update the view
                 self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, self.game_over,self.defeats)
@@ -129,7 +132,7 @@ class TetrisController:
     def receive_broken_line(self):
         self.model.add_broken_line()
     
-    def receive_defeat(self, player_id, player_name):
+    def receive_defeat(self, player_id):
         self.defeats[player_id] = True
     
     def receive_game_state(self, grid, current_piece):

@@ -47,20 +47,20 @@ class TetrisLauncher:
             return False
         
     def start_server(self):
-        subprocess.Popen(["python", "server.py"])
+        subprocess.Popen(["python", "./Tetris_Battleroyale/tetris_battleroyale/server.py"])
         time.sleep(2)
 
     def start(self):
         ip = "127.0.0.1"
         port = 12345
 
-        #if not self.is_server_running(ip, port):
-            #self.start_server()
+        if not self.is_server_running(ip, port):
+            self.start_server()
 
         controller = TetrisController()
         client = Client(self.name, controller)
         controller.client = client
-        #client.start()
+        client.start()
         #TODO questo va tolto che sta nel client
         controller.run()
 

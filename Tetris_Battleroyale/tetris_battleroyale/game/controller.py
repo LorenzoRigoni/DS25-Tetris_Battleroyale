@@ -25,6 +25,12 @@ class TetrisController:
         self.grids = [None]*self.player_number
         self.current_pieces = [None]*self.player_number
         self.defeats = [False]*self.player_number
+
+        for i in range(self.player_number-1):
+                if self.grids[i] == None:
+                    self.grids[i] = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+                    self.current_pieces[i] = {'shape': [[1, 1, 1], [0, 1, 0]], 'color': (255, 0, 0), 'x': 3, 'y': 0}
+                    self.defeats[i] = False
             
     def handle_events(self):
         # Handle user input events
@@ -44,11 +50,7 @@ class TetrisController:
     def run(self):
         while self.running:
             #update enemies with random values for testing
-            for i in range(self.player_number-1):
-                if self.grids[i] == None:
-                    self.grids[i] = [[0 for _ in range(COLS)] for _ in range(ROWS)]
-                    self.current_pieces[i] = {'shape': [[1, 1, 1], [0, 1, 0]], 'color': (255, 0, 0), 'x': 3, 'y': 0}
-                    self.defeats[i] = False
+            
             if not self.game_over:
                 self.handle_events()
 
@@ -129,3 +131,9 @@ class TetrisController:
     
     def receive_defeat(self, player_id, player_name):
         self.defeats[player_id] = True
+    
+    def receive_game_state(self, grid, current_piece):
+        # Update the game state of the player
+        self.model.grid = grid
+        self.model.current_piece = current_piece
+        self.model.updateEnemies(self.player_number, grid, current_piece)

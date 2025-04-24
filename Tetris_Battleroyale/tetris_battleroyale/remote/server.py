@@ -2,7 +2,7 @@ import socket
 import threading
 import time
 from utils.package import Package
-from game_manager import GameManager
+from remote.game_manager import GameManager
 
 class Server:
     def __init__(self):
@@ -11,7 +11,6 @@ class Server:
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind((self.host, self.port))
-        self.socket.settimeout(0.5)
         self.last_seen = {}
         self.player_and_addr = {}
         self.addr_and_player = {}
@@ -36,9 +35,10 @@ class Server:
     def timeout_monitor(self):
         '''Check if all the clients are still connected'''
         while True:
+            time.sleep(2)
             current_time = time.time()
             for addr, p_time in list(self.last_seen.items()):
-                if p_time - current_time > 5:
+                if current_time - p_time > 5:
                     self.handle_disconnection(self.addr_and_player[addr])
 
     def handle_received_packet(self, addr, p_type, p_data):
@@ -75,7 +75,7 @@ class Server:
             self.games_id += 1
 
         self.player_and_game[player_id] = game_id
-        self.send_message(Package.WAIT_FOR_GAME, self.player_and_addr[player_id], game_id = game_id)
+        self.send_message(Package.WAIT_FOR_GAME, self.player_and_addr[player_id])
         if self.games[game_id].add_player_to_game(player_id):
             self.send_broadcast_message(game_id, None, Package.GAME_COUNTDOWN)
             time.sleep(5)
@@ -100,7 +100,7 @@ class Server:
 
     def handle_defeat(self, player_id):
         '''Handle the defeat of a player and checks if the game is over'''
-        self.send_broadcast_message(self.player_and_game[player_id], player_id, Package.PLAYER_DEFEATED)
+        self.send_broadcast_message(self.player_and_game[player_id], player_id, Package.PLAYER_DEFEATED, player_id = player_id)
         if self.games[self.player_and_game[player_id]].is_game_over(player_id):
             self.send_broadcast_message(self.player_and_game[player_id], player_id, Package.GAME_OVER, winner = self.games[self.player_and_game[player_id]].get_winner_id())
             finished_game_id = self.player_and_game[player_id]
@@ -125,7 +125,7 @@ class Server:
 
     def send_message(self, packet_type, addr, **kwargs):
         '''Send a message to a specific client'''
-        packet = Package.encode(packet_type, kwargs)
+        packet = Package.encode(packet_type, **kwargs)
         self.socket.sendto(packet, addr)
 
     def send_broadcast_message(self, game_id, player_id, packet_type, **kwargs):

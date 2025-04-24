@@ -34,29 +34,7 @@ class TetrisLauncher:
         txt = self.input_font.render(self.name or "Enter your name", True, (255, 255, 255))
         self.screen.blit(txt, (rect.x + 10, rect.y + 8))
 
-    def is_server_running(self, ip, port):
-        try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sock.settimeout(1.0)
-            ping = Package.encode(Package.PING)
-            sock.sendto(ping, (ip, port))
-            data, addr = sock.recvfrom(4096)
-            sock.close()
-            return True
-        except Exception:
-            return False
-        
-    def start_server(self):
-        subprocess.Popen(["python", "./Tetris_Battleroyale/tetris_battleroyale/server.py"])
-        time.sleep(2)
-
     def start(self):
-        ip = "127.0.0.1"
-        port = 12345
-
-        if not self.is_server_running(ip, port):
-            self.start_server()
-
         controller = TetrisController()
         client = Client(self.name, controller)
         controller.client = client

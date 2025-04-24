@@ -9,146 +9,112 @@ class Client:
     def __init__(self, player_name, controller):
         self.player_name = player_name
         self.player_id = 0
-        self.server_addr = ("127.0.0.1", 12345)
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.server_addr = ("127.0.0.1", 5000)
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.running = True
         self.controller = controller
         self.player_name = player_name
-        self.send(Package.HAND_SHAKE)
-        #threading.Thread(target=self.handle_costant_sends, daemon=True).start()
+
+    def send_heartbeat(self):
+        while self.running:
+            self.send(Package.HEARTBEAT)
+            time.sleep(2)
 
     def start(self):
         '''Starts the client'''
+        try:
+            self.client_socket.connect(self.server_addr)
+        except Exception as e:
+            #TODO: controller message if the server is offline
+            self.running = False
+            self.client_socket.close()
+            print("")
+
+        self.send(Package.HAND_SHAKE)
+        threading.Thread(target=self.send_heartbeat, daemon=True).start()
+
         while self.running:
             try:
-                package, _ = self.socket.recvfrom(4096)
+                package = self.client_socket.recv(1024)
                 type, data = Package.decode(package)
-                self.handle_packet(type, data)
+                self.handle_received_packet(type, data)
             except Exception as e:
                 print(f"Client error: {e}")
                 self.running = False
 
-    def handle_costant_sends(self):
-        
-        while self.running:
-            try:        
-                print("Invio heartbeat")
-                self.send_heartbeat()
-                #TODo far bene
-                self.send_game_state(self.controller.grid, 3, self.controller.current_piece)
-            except Exception:
-                self.running = False
+    def start_game_search(self):
+        '''Start the search of a game'''
+        self.send(Package.START_SEARCH, player_id = self.player_id)
 
-    def send_heartbeat(self):
-        '''Sends the special packet "heartbeat" to the server'''
-        self.send(Package.HEARTBEAT)
+    def send_game_state(self, grid, current_piece):
+        '''Send the game state to the server'''
+        self.send(Package.GAME_STATE, player_id = self.player_id, grid = grid, current_piece = current_piece)
 
-    def handle_packet(self, type, data):
+    def send_broken_row(self):
+        '''Send the broken row to all others players'''
+        self.send(Package.SEND_ROW, player_id = self.player_id)
+
+    def send_defeat(self):
+        '''Send the defeat of the player'''
+        self.send(Package.PLAYER_DEFEATED, player_id = self.player_id)
+
+    def send_player_disconnected(self):
+        '''Send a packet when the player exit from the game'''
+        self.send(Package.PLAYER_LEFT, player_id = self.player_id)
+
+    def handle_received_packet(self, type, data):
         '''Handle the data received from the server'''
         if type == Package.HAND_SHAKE:
-            self.shake_hand(int(data["player_id"]))
-        if type == Package.GAME_STATE:
-            self.receive_game_state(data["grid_state"], int(data["player_id"]), data["player_name"], data["current_piece"])
-        elif type == Package.ROW_RECEIVED:
-            self.receive_broken_row(data["from_player"], data["row"])
-        elif type == Package.PLAYER_DEFEATED:
-            self.receive_defeat(int(data["player_id"]), data["player_name"])
-        elif type == Package.GAME_OVER:
-            self.receive_game_over(data["winner"])
-        elif type == Package.GET_LOBBIES:
-            self.receive_lobbies(data["lobbies_info"])
-        elif type == Package.JOIN_LOBBY:
-            self.receive_confirm_join_lobby()
-        elif type == Package.PLAYER_JOINED:
-            self.receive_player_joined_lobby(data["player_name"])
-        elif type == Package.LEAVE_LOBBY:
-            self.receive_confirm_leave_lobby()
-        elif type == Package.PLAYER_LEFT:
-            self.receive_player_left_lobby(data["player_name"])
+            self.player_id = int(data["player_id"])
+        elif type == Package.WAIT_FOR_GAME:
+            self.wait_for_game()
         elif type == Package.GAME_COUNTDOWN:
-            self.receive_game_countdown()
+            self.start_game_countdown()
         elif type == Package.GAME_START:
-            self.controller.run()
-    #TODO lobby_id deve averlo il client, non in controller
-    def send_game_state(self, grid,lobby_id,current_piece):
-        '''Send the game state of the user to the server'''
-        print(f"Sending game state: ")
-        self.send(Package.GAME_STATE, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name, grid_state = grid, current_piece = current_piece)
-        print(f"sent")
-    #TODO lobby_id deve averlo il client, non in controller
-    def send_broken_row(self, target,row):
-        '''Send the broken rows to the server with the information for who is/are the targets'''
-        if target != None:
-            self.send(Package.SEND_ROW, lobby_id = 3, player_id = self.player_id, player_name = self.player_name, target = target, row = row)
-        else:
-            self.send(Package.SEND_ROW, lobby_id = 3, player_id = self.player_id, player_name = self.player_name, row = row)
-    #TODO lobby_id deve averlo il client, non in controller
-    def send_defeat(self, lobby_id=3):
-        '''Send the message to the server that the player has lost the game'''
-        self.send(Package.PLAYER_DEFEATED, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name)
+            self.start_game()
+        elif type == Package.GAME_STATE:
+            self.receive_game_state(int(data["player_id"]), data["grid"], data["current_piece"])
+        elif type == Package.ROW_RECEIVED:
+            self.receive_broken_row()
+        elif type == Package.PLAYER_DEFEATED:
+            self.receive_defeat(int(data["player_id"]))
+        elif type == Package.GAME_OVER:
+            self.receive_game_over(int(data["winner"]))
 
-    def receive_game_state(self, grid_state, player_id, current_piece):
-        '''Receive the game state of the users from the server'''
-        print(f"Received game state from player {player_id}: {grid_state}")
-        self.controller.updateEnemies(player_id, grid_state, current_piece)
-
-    def receive_broken_row(self):
-        '''Receive the broken row from the server'''
-        self.controller.receive_broken_line()
-
-    def receive_defeat(self, player_id, player_name):
-        '''Receive the message from the server of a player who lost the game'''
-        self.controller.receive_defeat(player_id)
-
-    def receive_game_over(self, winner_name):
-        '''Receive the name of the winner of the game'''
-        #TODO: implement in controller the method to visualize the winner
+    def wait_for_game(self):
+        '''Wait until the game starts'''
+        #TODO: method in controller for display the wait screen
         pass
 
+    def start_game_countdown(self):
+        '''Start the five seconds countdown'''
+        #TODO: method in controller for display the countdown screen
+        pass
+
+    def start_game(self):
+        '''Start the game after the countdown'''
+        #TODO: method in controller for display the game screen
+        pass
+
+    def receive_game_state(self, player_id, grid, current_piece):
+        '''Receive the game state of a player'''
+        #TODO: method in controller for display the players screens
+        pass
+
+    def receive_broken_row(self):
+        '''Receive a broken row'''
+        #TODO: method in controller for add the row
+        pass
+
+    def receive_defeat(self, player_id):
+        #TODO: method in controller for the defeat of a player
+        pass
+
+    def receive_game_over(self, winner_id):
+        #TODO: method in controller for game over and display the winner
+        pass
+    
     def send(self, packet_type, **kwargs):
         '''Send a packet to the server'''
         data = Package.encode(packet_type, **kwargs)
-        self.socket.sendto(data, self.server_addr)
-
-    def shake_hand(self, player_id):
-        self.player_id = player_id
-
-    def get_lobbies(self):
-        '''Request the lobbies'''
-        self.send(Package.GET_LOBBIES)
-
-    def join_lobby(self, lobby_id):
-        '''Try to enter in a lobby'''
-        self.send(Package.JOIN_LOBBY, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name)
-
-    def receive_lobbies(self, lobbies_info):
-        '''Receive the info of the lobbies'''
-        #TODO: implement in controller the method to visualize the lobbies
-        pass
-
-    def receive_confirm_join_lobby(self):
-        '''Receive the message of confirm for join the lobby'''
-        #TODO: implement in controller the method to visualize the message
-        pass
-
-    def receive_player_joined_lobby(self, player_name):
-        '''Receive the message of a player who joined the lobby'''
-        #TODO: implement in controller the method to visualize the message
-
-    def receive_confirm_leave_lobby(self):
-        '''Receive the message of confirm for leave the lobby'''
-        #TODO: implement in controller the method to visualize the message
-        pass
-
-    def receive_player_left_lobby(self, player_name):
-        '''Receive the message of a player who left the lobby'''
-        #TODO: implement in controller the method to visualize the message
-
-    def receive_game_countdown(self):
-        '''Receive the message that the game is starting'''
-        #TODO: implement in controller the method to visualize the message
-
-    def close_connection(self):
-        '''Close the client connection'''
-        self.running = False
-        self.socket.close()
+        self.client_socket.send(data)

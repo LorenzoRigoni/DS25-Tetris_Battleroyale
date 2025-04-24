@@ -2,157 +2,137 @@ import socket
 import threading
 import time
 from utils.package import Package
-from utils.lobby import Lobby
+from game_manager import GameManager
 
 class Server:
     def __init__(self):
         self.host = "127.0.0.1"
-        self.port = 12345
-        self.num_max_lobbies = 10
-        self.num_max_players_per_lobby = 10
-        self.num_min_players_per_lobby = 4
+        self.port = 5000
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.bind((self.host, self.port))
         self.socket.settimeout(0.5)
         self.last_seen = {}
+        self.player_and_addr = {}
+        self.addr_and_player = {}
 
-        self.lobbies = [Lobby(i) for i in range(self.num_max_lobbies)]
-        self.id_counter = 0
-        self.players_ids_names = {}
+        self.player_id_counter = 0
+        self.games_id = 0
+        self.games: list[GameManager] = []
+        self.player_and_game: dict[int, int] = {}
+        
         threading.Thread(target=self.timeout_monitor, daemon=True).start()
 
     def start(self):
-        '''Starts the server'''
+        '''Start the server'''
         while True:
             try:
-                data, addr = self.socket.recvfrom(4096)
+                data, addr = self.socket.recvfrom(1024)
                 p_type, p_data = Package.decode(data)
-                self.handle_request(addr, p_type, p_data)
-            except socket.timeout:
-                continue
+                self.handle_received_packet(addr, p_type, p_data)
             except Exception as e:
                 print(f"Error in the receivment of a packet on the server: {e}")
 
-    def handle_request(self, addr, p_type, p_data):
+    def timeout_monitor(self):
+        '''Check if all the clients are still connected'''
+        while True:
+            current_time = time.time()
+            for addr, p_time in list(self.last_seen.items()):
+                if p_time - current_time > 5:
+                    self.handle_disconnection(self.addr_and_player[addr])
+
+    def handle_received_packet(self, addr, p_type, p_data):
         '''Handle the client requests'''
-        if p_type == Package.SHAKE_HAND:
-            self.shake_hand(addr)
+        if p_type == Package.HAND_SHAKE:
+            self.hand_shake(addr)
         elif p_type == Package.HEARTBEAT:
             self.last_seen[addr] = time.time()
-        elif p_type == Package.GET_LOBBIES:
-            self.send_available_lobbies(addr)
-        elif p_type == Package.JOIN_LOBBY:
-            self.handle_join_lobby(addr, int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"])
-        elif p_type == Package.LEAVE_LOBBY:
-            self.handle_leave_lobby(addr, int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"])
+        elif p_type == Package.START_SEARCH:
+            self.start_game_search(int(p_data["player_id"]))
+        elif p_type == Package.GAME_STATE:
+            self.send_game_state(int(p_data["player_id"]), p_data["grid"], p_data["current_piece"])
         elif p_type == Package.SEND_ROW:
-            self.send_broken_row(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["target"])
-        elif p_type == Package.UPDATE_STATE:
-            self.update_state(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["grid_state"], p_data["current_piece"])
+            self.send_broken_row(int(p_data["player_id"]))
         elif p_type == Package.PLAYER_DEFEATED:
-            self.handle_defeat(int(p_data["lobby_id"]), int(p_data["player_id"]), p_data["player_name"])
+            self.handle_defeat(int(p_data["player_id"]))
+        elif p_type == Package.PLAYER_LEFT:
+            self.handle_disconnection(int(p_data["player_id"]))
 
-    def shake_hand(self, addr):
-        '''Defines the first iteraction between client and server. The server sends to the client a packet with the id of the player'''
-        actual_counter = self.id_counter
-        self.id_counter = self.id_counter + 1
-        self.send_message(Package.SHAKE_HAND, addr, player_id = actual_counter)
+    def hand_shake(self, addr):
+        '''When client connects to the server for the first time, the server sends the id of the player associated to the client.'''
+        actual_counter = self.player_id_counter
+        self.player_id_counter += 1
+        self.player_and_addr[actual_counter] = addr
+        self.addr_and_player[addr] = actual_counter
+        self.send_message(Package.HAND_SHAKE, addr, player_id = actual_counter)
 
-    def timeout_monitor(self):
-        '''Checks if the clients are connected yet with an heartbeat packet'''
-        while True:
-            now = time.time()
-            for client_addr, last_time in list(self.last_seen.items()):
-                if now - last_time > 5:
-                    #TODO: implement the disconnection of the player
-                    pass
-            time.sleep(1)
+    def start_game_search(self, player_id):
+        '''Start the search of a game'''
+        game_id = self.check_availables_games()
+        if len(self.games) == 0 or game_id == -1:
+            self.games.append(GameManager(self.games_id))
+            game_id = self.games_id
+            self.games_id += 1
 
-    def send_broken_row(self, lobby_id, from_player, to_player):
-        '''Send to a player (or to all) the broken rows'''
-        if to_player == None:
-            self.send_broadcast_message(lobby_id, from_player, Package.ROW_RECEIVED)
-        else:
-            "TODO: implement the version with a target"
-
-    def update_state(self, lobby_id, player_id, grid_state, current_piece):
-        '''Update the state of a player and send to all others players'''
-        if lobby_id in self.lobbies and player_id in self.lobbies[lobby_id].get_players():
-            self.lobbies[lobby_id].update_game_state(grid_state)
-            self.send_broadcast_message(lobby_id, Package.UPDATE_STATE, grid_state = grid_state, player_id = player_id, current_piece = current_piece)
-
-    def handle_defeat(self, lobby_id, player_id, player_name):
-        '''Manage the defeat of a player and checks if the game is over'''
-        self.send_broadcast_message(lobby_id, Package.PLAYER_DEFEATED, player_id = player_id, player_name = player_name)
-
-        if self.lobbies[lobby_id].get_num_of_players() == 1:
-            winner = self.lobbies[lobby_id].get_players()
-            for id in winner:
-                winner_name = self.players_ids_names[id]
-            self.send_broadcast_message(lobby_id, Package.GAME_OVER, winner = winner_name)
+        self.player_and_game[player_id] = game_id
+        self.send_message(Package.WAIT_FOR_GAME, self.player_and_addr[player_id], game_id = game_id)
+        if self.games[game_id].add_player_to_game(player_id):
+            self.send_broadcast_message(game_id, None, Package.GAME_COUNTDOWN)
             time.sleep(5)
-            self.reset_lobby(lobby_id)
+            self.send_broadcast_message(game_id, None, Package.GAME_START)
 
-    def reset_lobby(self, lobby_id):
-        '''Reset the lobby when the game is over'''
-        self.lobbies[lobby_id].reset_lobby()
+    def check_availables_games(self):
+        '''Check if there is a not full game. 
+        Return -1 if all the games are full, otherwise the id of the first game not full'''
+        for game in self.games:
+            if not game.is_game_full():
+                return game.get_game_id()
+            
+        return -1
+    
+    def send_game_state(self, player_id, grid, current_piece):
+        '''Send the game state of a player to all others players of the game'''
+        self.send_broadcast_message(self.player_and_game[player_id], player_id, Package.GAME_STATE, grid = grid, current_piece = current_piece)
 
-    def send_available_lobbies(self, addr):
-        '''Send to the client the available lobbies'''
-        lobbies_info = [
-            {
-                "id": lobby.get_lobby_id(),
-                "num_players": lobby.get_num_of_players(),
-                "is_game_started": lobby.check_game_started()
-            }
-            for lobby in self.lobbies
-        ]
-        self.send_message(Package.GET_LOBBIES, addr, lobbies_info = lobbies_info)
+    def send_broken_row(self, player_id):
+        '''Send the broken row of a player to all others'''
+        self.send_broadcast_message(self.player_and_game[player_id], player_id, Package.ROW_RECEIVED)
 
-    def handle_join_lobby(self, addr, lobby_id, player_id, player_name):
-        '''Allow a player to join a lobby'''
-        lobby = self.lobbies[lobby_id]
+    def handle_defeat(self, player_id):
+        '''Handle the defeat of a player and checks if the game is over'''
+        self.send_broadcast_message(self.player_and_game[player_id], player_id, Package.PLAYER_DEFEATED)
+        if self.games[self.player_and_game[player_id]].is_game_over(player_id):
+            self.send_broadcast_message(self.player_and_game[player_id], player_id, Package.GAME_OVER, winner = self.games[self.player_and_game[player_id]].get_winner_id())
+            finished_game_id = self.player_and_game[player_id]
+            self.games.remove(self.games[finished_game_id])
 
-        if lobby.get_num_of_players() < self.num_max_players_per_lobby and not lobby.check_game_started():
-            lobby.add_player_to_lobby(player_id, addr)
-            self.players_ids_names[player_id] = player_name
+            for p_id, game_id in list(self.player_and_game.items()):
+                if game_id == finished_game_id:
+                    del self.player_and_game[p_id]
 
-            self.send_message(Package.JOINED_LOBBY, addr)
-            self.send_broadcast_message(lobby_id, player_id, Package.PLAYER_JOINED, player_name = player_name)
-
-            if lobby.get_num_of_players() >= self.num_min_players_per_lobby:
-                self.start_game_countdown(lobby_id)
-        else:
-            self.send_message(Package.ERROR, addr, message = "Lobby full or already started")
-
-    def handle_leave_lobby(self, addr, lobby_id, player_id, player_name):
-        '''Handle the leaving of a player from the lobby'''
-
-        self.lobbies[lobby_id].delete_player_to_lobby(player_id)
-
-        self.send_message(Package.LEAVE_LOBBY, addr)
-        self.send_broadcast_message(lobby_id, player_id, Package.PLAYER_LEFT, player_name = player_name)
-        self.handle_defeat(lobby_id, player_id, player_name)
-
-    def start_game_countdown(self, lobby_id):
-        '''Activate a 5 second countdown when a lobby is started'''
-        lobby = self.lobbies[lobby_id]
-        if not lobby.check_game_started():
-            self.send_broadcast_message(lobby_id, None, Package.GAME_COUNTDOWN, initial_timer = 5)
-            time.sleep(5)
-            lobby.start_game()
-            self.send_broadcast_message(lobby_id, None, Package.GAME_START)
+    def handle_disconnection(self, player_id):
+        '''Handle the dicconction of a player'''
+        if player_id in self.player_and_game:
+            self.handle_defeat(player_id)
+            del self.player_and_game[player_id]
+        
+        del self.last_seen[self.player_and_addr[player_id]]
+        del self.player_and_addr[player_id]
+        for addr, p_id in list(self.addr_and_player.items()):
+            if p_id == player_id:
+                del self.addr_and_player[addr]
+                break
 
     def send_message(self, packet_type, addr, **kwargs):
         '''Send a message to a specific client'''
-        data = Package.encode(packet_type, **kwargs)
-        self.socket.sendto(data, addr)
+        packet = Package.encode(packet_type, kwargs)
+        self.socket.sendto(packet, addr)
 
-    def send_broadcast_message(self, lobby_id, player_id, packet_type, **kwargs):
-        '''Send a message to all the opponents of a lobby'''
+    def send_broadcast_message(self, game_id, player_id, packet_type, **kwargs):
+        '''Send a message to all the players of a game'''
         if player_id != None:
-            opponents = {f"{p_id}: {p_addr}" for p_id, p_addr in self.lobbies[lobby_id].get_players().items() if p_id != player_id}
+            opponents = [addr for p_id, addr in self.player_and_addr.items() if p_id != player_id and self.player_and_game[p_id] == game_id]
         else:
-            opponents = {f"{p_id}: {p_addr}" for p_id, p_addr in self.lobbies[lobby_id].get_players().items()}
-        for addr in opponents.values():
+           opponents = [addr for p_id, addr in self.player_and_addr.items() if self.player_and_game[p_id] == game_id]
+        for addr in opponents:
             self.send_message(packet_type, addr, kwargs)

@@ -14,7 +14,7 @@ class Client:
         self.running = True
         self.controller = controller
         self.player_name = player_name
-        self.send(Package.SHAKE_HAND)
+        self.send(Package.HAND_SHAKE)
         #threading.Thread(target=self.handle_costant_sends, daemon=True).start()
 
     def start(self):
@@ -45,9 +45,9 @@ class Client:
 
     def handle_packet(self, type, data):
         '''Handle the data received from the server'''
-        if type == Package.SHAKE_HAND:
+        if type == Package.HAND_SHAKE:
             self.shake_hand(int(data["player_id"]))
-        if type == Package.UPDATE_STATE:
+        if type == Package.GAME_STATE:
             self.receive_game_state(data["grid_state"], int(data["player_id"]), data["player_name"], data["current_piece"])
         elif type == Package.ROW_RECEIVED:
             self.receive_broken_row(data["from_player"], data["row"])
@@ -73,7 +73,7 @@ class Client:
     def send_game_state(self, grid,lobby_id,current_piece):
         '''Send the game state of the user to the server'''
         print(f"Sending game state: ")
-        self.send(Package.UPDATE_STATE, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name, grid_state = grid, current_piece = current_piece)
+        self.send(Package.GAME_STATE, lobby_id = lobby_id, player_id = self.player_id, player_name = self.player_name, grid_state = grid, current_piece = current_piece)
         print(f"sent")
     #TODO lobby_id deve averlo il client, non in controller
     def send_broken_row(self, target,row):

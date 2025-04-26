@@ -84,13 +84,14 @@ class TetrisController:
                         if lines_cleared:
                             print(f"Lines cleared: {lines_cleared}")
                     self.last_fall_time = current_time
-                    self.client.send_game_state(self.model.grid, 3, self.model.current_piece)
+                    self.client.send_game_state(self.model.grid,self.model.current_piece)
 
                 # Update the view
                 self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, self.game_over,self.defeats)
                 # Send the game state to the server
                 
             else:
+                print("Game over")
                 self.send_defeat()
                 # Game over state
                 self.view.display_game_over()

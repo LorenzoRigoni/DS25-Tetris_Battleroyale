@@ -6,6 +6,7 @@ from remote.server import Server
 from remote.client import Client
 from game.controller import TetrisController
 from utils.package import Package
+import threading
 
 WIDTH, HEIGHT = 400, 350
 
@@ -38,7 +39,8 @@ class TetrisLauncher:
         controller = TetrisController()
         client = Client(self.name, controller)
         controller.client = client
-        client.start()
+        client_thread = threading.Thread(target=client.start, daemon=True)
+        client_thread.start()
         #TODO questo va tolto che sta nel client
         controller.run()
 

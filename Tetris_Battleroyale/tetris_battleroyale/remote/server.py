@@ -18,6 +18,8 @@ class Server:
         self.player_id_counter = 0
         self.games_id = 0
         self.games: list[GameManager] = []
+        #create first game
+        self.games.append(GameManager(self.games_id))
         self.player_and_game: dict[int, int] = {}
         
         threading.Thread(target=self.timeout_monitor, daemon=True).start()
@@ -31,7 +33,6 @@ class Server:
                 self.handle_received_packet(addr, p_type, p_data)
             except Exception as e:
                 print(f"Error in the receivment of a packet on the server: {e}")
-                print(self.player_and_game)
                 traceback.print_exc()
 
     def timeout_monitor(self):
@@ -44,7 +45,7 @@ class Server:
                     self.handle_disconnection(self.addr_and_player[addr])
 
     def handle_received_packet(self, addr, p_type, p_data):
-        print(f"Received packet of type {p_type} from {addr}")
+        #print(f"Received packet of type {p_type} from {addr}")
         '''Handle the client requests'''
         if p_type == Package.HAND_SHAKE:
             self.hand_shake(addr)
@@ -68,22 +69,23 @@ class Server:
         self.player_and_addr[actual_counter] = addr
         self.addr_and_player[addr] = actual_counter
         self.player_and_game[actual_counter] = self.check_availables_games()
+        print(f"Player {actual_counter} connected from {addr} and {self.player_and_game}")
         self.send_message(Package.HAND_SHAKE, addr, player_id = actual_counter)
+        self.start_game_search(actual_counter,self.player_and_game[actual_counter])
 
-    def start_game_search(self, player_id):
+    def start_game_search(self, player_id,game_id):
         '''Start the search of a game'''
-        game_id = self.check_availables_games()
         if len(self.games) == 0 or game_id == -1:
-            self.games.append(GameManager(self.games_id))
             game_id = self.games_id
+            self.games.append(GameManager(self.games_id))
             self.games_id += 1
 
-        self.player_and_game[player_id] = game_id
-        self.send_message(Package.WAIT_FOR_GAME, self.player_and_addr[player_id])
+        print(f"Player {player_id} is waiting for a game",self.player_and_game[player_id])
         if self.games[game_id].add_player_to_game(player_id):
-            self.send_broadcast_message(game_id, None, Package.GAME_COUNTDOWN)
-            time.sleep(5)
             self.send_broadcast_message(game_id, None, Package.GAME_START)
+        else:
+            #send number of players to all
+            self.send_broadcast_message(game_id, None, Package.WAIT_FOR_GAME, number_of_players = len(self.games[game_id].players_id))
 
     def check_availables_games(self):
         '''Check if there is a not full game. 
@@ -96,7 +98,7 @@ class Server:
     
     def send_game_state(self, player_id, grid, current_piece):
         '''Send the game state of a player to all others players of the game'''
-        self.send_broadcast_message(self.player_and_game[player_id], None, Package.GAME_STATE, grid = grid, current_piece = current_piece, sender= player_id)
+        self.send_broadcast_message(self.player_and_game[player_id], player_id, Package.GAME_STATE, grid = grid, current_piece = current_piece, sender= player_id)
 
     def send_broken_row(self, player_id):
         '''Send the broken row of a player to all others'''
@@ -144,6 +146,6 @@ class Server:
             opponents = [addr for p_id, addr in self.player_and_addr.items() if p_id != player_id and self.player_and_game[p_id] == game_id]
         else:
            opponents = [addr for p_id, addr in self.player_and_addr.items() if self.player_and_game[p_id] == game_id]
-        print(f"Sending message to {len(opponents)} players")
+        #print(f"Sending message to {len(opponents)} players")
         for addr in opponents:
             self.send_message(packet_type, addr, **kwargs)

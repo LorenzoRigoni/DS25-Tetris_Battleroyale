@@ -41,7 +41,6 @@ class TetrisLauncher:
         controller.client = client
         client_thread = threading.Thread(target=client.start, daemon=True)
         client_thread.start()
-        #TODO questo va tolto che sta nel client
         controller.run()
 
     def run(self):

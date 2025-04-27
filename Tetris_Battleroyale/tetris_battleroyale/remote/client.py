@@ -66,15 +66,17 @@ class Client:
 
     def handle_received_packet(self, type, data):
         '''Handle the data received from the server'''
-        print(f"Received packet: {type}, {data}")
         if type == Package.HAND_SHAKE:
             self.player_id = int(data["player_id"])
         elif type == Package.WAIT_FOR_GAME:
-            self.wait_for_game()
+            self.wait_for_game(int(data["number_of_players"]))
         elif type == Package.GAME_COUNTDOWN:
             self.start_game_countdown()
+            
+            print(f"Received packet: {type}, {data}")
         elif type == Package.GAME_START:
             self.start_game()
+            print(f"Received packet: {type}, {data}")
         elif type == Package.GAME_STATE:
             self.receive_game_state(int(data["sender"]), data["grid"], data["current_piece"])
         elif type == Package.ROW_RECEIVED:
@@ -84,20 +86,9 @@ class Client:
         elif type == Package.GAME_OVER:
             self.receive_game_over(int(data["winner"]))
 
-    def wait_for_game(self):
-        '''Wait until the game starts'''
-        #TODO: method in controller for display the wait screen
-        pass
-
-    def start_game_countdown(self):
-        '''Start the five seconds countdown'''
-        #TODO: method in controller for display the countdown screen
-        pass
-
     def start_game(self):
-        '''Start the game after the countdown'''
-        #TODO: method in controller for display the game screen
-        pass
+        '''Start the game'''
+        self.controller.searching=False
 
     def receive_game_state(self, player_id, grid, current_piece):
         '''Receive the game state of a player'''
@@ -115,6 +106,10 @@ class Client:
     def receive_game_over(self, winner_id):
         #TODO: method in controller for game over and display the winner
         pass
+    def wait_for_game(self,number_of_players):
+        '''Wait for a game to start'''
+        self.controller.players_in_lobby = number_of_players
+
     
     def send(self, packet_type, **kwargs):
         '''Send a packet to the server'''

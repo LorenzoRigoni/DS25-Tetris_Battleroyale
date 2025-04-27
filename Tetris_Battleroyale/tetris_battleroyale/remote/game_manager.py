@@ -13,6 +13,7 @@ class GameManager:
 
     def is_game_full(self):
         '''Checks if the game is full'''
+        print(f"Game {self.game_id} is full: {len(self.players_id)} players")
         return len(self.players_id) >= self.min_num_players_to_start
     
     def get_game_id(self):

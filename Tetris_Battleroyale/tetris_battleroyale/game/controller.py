@@ -4,9 +4,11 @@ import pygame
 from game.model import TetrisModel
 from game.view import TetrisView
 from utils.vars import *
+import time
 
 class TetrisController:
     current_lobby_id=0
+    players_in_lobby=0
     def __init__(self,player_number = 9):
         self.running = True
         self.game_over = False 
@@ -19,6 +21,7 @@ class TetrisController:
         self.fast_fall = False
         self.last_move_time = pygame.time.get_ticks()
         self.move_cooldown = 200  # Cooldown for lateral movement (in milliseconds)
+        self.searching = True
 
         
         #initilize grids and pieces
@@ -51,6 +54,15 @@ class TetrisController:
                     self.model.add_gray_line_with_hole()
     #TODO remove 10 as default value also this is only for client, no server implementation yet
     def run(self):
+        
+        print("Starting search...")
+        while self.searching:
+            # Search for a game
+            self.view.display_searching(self.players_in_lobby)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+        
         while self.running:
             #update enemies with random values for testing
             

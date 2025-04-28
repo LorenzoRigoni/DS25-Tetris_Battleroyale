@@ -51,7 +51,7 @@ class TetrisController:
                 elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:  # Hold the piece
                     self.model.hold_current_piece()
                 elif event.key == pygame.K_m:  # Add a gray line with a random hole
-                    self.model.add_gray_line_with_hole()
+                    self.model.add_broken_line()
     #TODO remove 10 as default value also this is only for client, no server implementation yet
     def run(self):
         
@@ -122,26 +122,12 @@ class TetrisController:
         self.current_pieces[playerNumber] = current_piece
 
     def send_game_state(self):
-        # Send the game state to the server
-        if hasattr(self, 'client'):
             self.client.send_game_state(self.model.grid, self.server.lobby_id, self.model.current_piece)
-        #TODO
-        elif hasattr(self, 'server'):
-            pass
-    def send_broken_row(self, target):
-        # Send the broken rows to the server
-        if hasattr(self, 'client'):
-            self.client.send_broken_row(target)
-        #TODO
-        elif hasattr(self, 'server'):
-            pass
+    def send_broken_row(self):
+            print(self.player_number)
+            self.client.send_broken_row(1-self.client.player_id)
     def send_defeat(self):
-        # Send the defeat message to the server
-        if hasattr(self, 'client'):
             self.client.send_defeat()
-        #TODO
-        elif hasattr(self, 'server'):
-            pass
     def receive_broken_line(self):
         self.model.add_broken_line()
     

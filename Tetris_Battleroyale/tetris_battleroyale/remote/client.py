@@ -54,7 +54,7 @@ class Client:
 
     def send_broken_row(self,target):
         '''Send the broken row to all others players'''
-        self.send(Package.SEND_ROW, target)
+        self.send(Package.SEND_ROW, target=target)
 
     def send_defeat(self):
         '''Send the defeat of the player'''
@@ -96,8 +96,7 @@ class Client:
 
     def receive_broken_row(self):
         '''Receive a broken row'''
-        #TODO: method in controller for add the row
-        pass
+        self.controller.receive_broken_line()
 
     def receive_defeat(self, player_id):
         #TODO: method in controller for the defeat of a player

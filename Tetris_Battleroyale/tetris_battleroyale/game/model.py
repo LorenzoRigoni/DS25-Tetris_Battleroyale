@@ -95,7 +95,7 @@ class TetrisModel:
         # Clear any full lines and return the number of lines cleared
         lines_to_clear = [y for y in range(ROWS) if all(self.grid[y])]
         if len(lines_to_clear) == 4:
-            self.controller.send_broken_row(self.player_number)  # Send the broken row to the server
+            self.controller.send_broken_row()  # Send the broken row to the server
         for y in lines_to_clear:
             del self.grid[y]
             self.grid.insert(0, [0 for _ in range(COLS)])
@@ -164,7 +164,7 @@ class TetrisModel:
                         return True
         return False
 
-    def add_gray_line_with_hole(self):
+    def add_broken_line(self):
         # Add a gray line with one random hole at the bottom and shift everything up
         gray_color = (128, 128, 128)  # Gray color
 
@@ -175,6 +175,7 @@ class TetrisModel:
         # Create a new line with one random hole
         new_line = [gray_color for _ in range(COLS)]  # Fill the line with gray blocks
         hole_index = random.randint(0, COLS - 1)  # Randomly choose an index for the hole
+        
         new_line[hole_index] = 0  # Set the hole (0 means empty)
 
         # Add the new line at the bottom

@@ -54,7 +54,7 @@ class Client:
 
     def send_broken_row(self,target):
         '''Send the broken row to all others players'''
-        self.send(Package.SEND_ROW, target=target)
+        self.send(Package.SEND_ROW, player_id = self.player_id)
 
     def send_defeat(self):
         '''Send the defeat of the player'''
@@ -70,13 +70,8 @@ class Client:
             self.player_id = int(data["player_id"])
         elif type == Package.WAIT_FOR_GAME:
             self.wait_for_game(int(data["number_of_players"]))
-        elif type == Package.GAME_COUNTDOWN:
-            self.start_game_countdown()
-            
-            print(f"Received packet: {type}, {data}")
         elif type == Package.GAME_START:
             self.start_game()
-            print(f"Received packet: {type}, {data}")
         elif type == Package.GAME_STATE:
             self.receive_game_state(int(data["sender"]), data["grid"], data["current_piece"])
         elif type == Package.ROW_RECEIVED:
@@ -96,6 +91,7 @@ class Client:
 
     def receive_broken_row(self):
         '''Receive a broken row'''
+        print("Received a broken row")
         self.controller.receive_broken_line()
 
     def receive_defeat(self, player_id):

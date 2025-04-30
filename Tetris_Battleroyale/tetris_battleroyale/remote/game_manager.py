@@ -1,6 +1,6 @@
 class GameManager:
     def __init__(self, game_id):
-        self.min_num_players_to_start = 2
+        self.min_num_players_to_start = 3
 
         self.game_id = game_id
         self.players_id: list[int] = []

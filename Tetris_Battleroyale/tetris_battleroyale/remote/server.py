@@ -56,7 +56,7 @@ class Server:
         elif p_type == Package.GAME_STATE:
             self.send_game_state(int(p_data["player_id"]), p_data["grid"], p_data["current_piece"])
         elif p_type == Package.SEND_ROW:
-            self.send_broken_row(int(p_data["target"]))
+            self.send_broken_row(int(p_data["player_id"]))
         elif p_type == Package.PLAYER_DEFEATED:
             self.handle_defeat(int(p_data["player_id"]))
         elif p_type == Package.PLAYER_LEFT:
@@ -101,8 +101,9 @@ class Server:
         self.send_broadcast_message(self.player_and_game[player_id], player_id, Package.GAME_STATE, grid = grid, current_piece = current_piece, sender= player_id)
 
     def send_broken_row(self, player_id):
-        '''Send the broken row of a player to the one targetted'''
-        self.send_message(Package.ROW_RECEIVED, self.player_and_addr[player_id])
+        '''Send the broken row to all the players of the game'''
+        print("mando")
+        self.send_broadcast_message(self.player_and_game[player_id], player_id, Package.ROW_RECEIVED)
         
 
     def handle_defeat(self, player_id):

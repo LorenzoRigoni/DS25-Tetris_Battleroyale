@@ -2,7 +2,7 @@ import socket
 import threading
 import time
 from utils.package import Package
-from remote.game_manager import GameManager
+from Tetris_Battleroyale.tetris_battleroyale.remote.game_room import GameRoom
 import traceback
 class Server:
     def __init__(self):
@@ -17,9 +17,9 @@ class Server:
 
         self.player_id_counter = 0
         self.games_id = 0
-        self.games: list[GameManager] = []
+        self.games: list[GameRoom] = []
         #create first game
-        self.games.append(GameManager(self.games_id))
+        self.games.append(GameRoom(self.games_id))
         self.player_and_game: dict[int, int] = {}
         
         threading.Thread(target=self.timeout_monitor, daemon=True).start()
@@ -77,21 +77,22 @@ class Server:
         '''Start the search of a game'''
         if len(self.games) == 0 or game_id == -1:
             game_id = self.games_id
-            self.games.append(GameManager(self.games_id))
+            self.games.append(GameRoom(self.games_id))
             self.games_id += 1
 
         print(f"Player {player_id} is waiting for a game",self.player_and_game[player_id])
-        if self.games[game_id].add_player_to_game(player_id):
+        if self.games[game_id].add_player(player_id):
             self.send_broadcast_message(game_id, None, Package.GAME_START)
+            self.games[game_id].change_room_availability()
         else:
             #send number of players to all
-            self.send_broadcast_message(game_id, None, Package.WAIT_FOR_GAME, number_of_players = len(self.games[game_id].players_id))
+            self.send_broadcast_message(game_id, None, Package.WAIT_FOR_GAME, number_of_players = self.games[game_id].get_num_of_players())
 
     def check_availables_games(self):
         '''Check if there is a not full game. 
         Return -1 if all the games are full, otherwise the id of the first game not full'''
         for game in self.games:
-            if not game.is_game_full():
+            if game.is_room_available():
                 return game.get_game_id()
             
         return -1

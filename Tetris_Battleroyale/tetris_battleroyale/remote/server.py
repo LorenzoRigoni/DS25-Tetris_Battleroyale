@@ -2,7 +2,7 @@ import socket
 import threading
 import time
 from utils.package import Package
-from Tetris_Battleroyale.tetris_battleroyale.remote.game_room import GameRoom
+from remote.game_room import GameRoom
 import traceback
 class Server:
     def __init__(self):

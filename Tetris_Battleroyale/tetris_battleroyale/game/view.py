@@ -39,6 +39,9 @@ class TetrisView:
             y = ((i// 2)%2) * small_height
             # Update the game view on its own surface
             game_view.update(grids[i], current_pieces[i], next_piece, hold_piece, games_over[i])
+            
+            #draw a white border around the game view
+            pygame.draw.rect(game_surface, WHITE, (0, 0, small_width, small_height), 2)
 
             # Blit the game view's surface onto the main screen
             self.screen.blit(game_surface, (x, y))
@@ -52,7 +55,7 @@ class TetrisView:
         # Blit the main game view's surface onto the main screen
         self.screen.blit(self.main_game_view.screen, (main_x, main_y))
         #draw a white border around the main game view
-        pygame.draw.rect(self.screen, WHITE, (main_x - 5, main_y - 5, GAME_SCREEN_WIDTH + 10, GAME_SCREEN_HEIGHT + 10), 2)
+        pygame.draw.rect(self.screen, WHITE, (main_x, main_y, GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT), 2)
 
         #pygame.display.flip()
         #self.clock.tick(30)

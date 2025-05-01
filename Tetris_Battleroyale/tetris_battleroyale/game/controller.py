@@ -57,23 +57,15 @@ class TetrisController:
                     self.paused = not self.paused
 
     def run(self):
-        
         while self.running and self.searching:
             self.view.display_searching(self.players_in_lobby)
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:  # Quit the game
                         self.paused = not self.paused
-            if self.paused:
-                return_menu_button = self.view.display_pause()
-                #if clicked return to menu button, exit the game
-                if return_menu_button.collidepoint(pygame.mouse.get_pos()):
-                    if pygame.mouse.get_pressed()[0]:
-                        self.client.send_player_disconnected()
-                        print("Player disconnected")
-                        self.running = False
+            self.handle_pause()
             self.view.update_all()
-        
+        print("Game started")
         while self.running:
             #update enemies with random values for testing
             
@@ -125,6 +117,10 @@ class TetrisController:
                     elif event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
                             running = False
+            self.handle_pause()
+            self.view.update_all()
+
+
 
         pygame.quit()
     def updateEnemies(self, playerNumber, grid, current_piece):
@@ -150,3 +146,12 @@ class TetrisController:
         self.model.grid = grid
         self.model.current_piece = current_piece
         self.model.updateEnemies(self.player_number, grid, current_piece)
+    def handle_pause(self):
+        if self.paused:
+                return_menu_button = self.view.display_pause()
+                #if clicked return to menu button, exit the game
+                if return_menu_button.collidepoint(pygame.mouse.get_pos()):
+                    if pygame.mouse.get_pressed()[0]:
+                        self.client.send_player_disconnected()
+                        print("Player disconnected")
+                        self.running = False

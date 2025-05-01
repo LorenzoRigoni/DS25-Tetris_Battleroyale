@@ -95,12 +95,14 @@ class Client:
         self.controller.receive_broken_line()
 
     def receive_defeat(self, player_id):
-        #TODO: method in controller for the defeat of a player
-        pass
+        '''Receive the defeat of a player'''
+        print(f"Player {player_id} has been defeated")
+        self.controller.receive_defeat(player_id)
 
     def receive_game_over(self, winner_id):
-        #TODO: method in controller for game over and display the winner
-        pass
+        '''Receive the game over'''
+        print(f"Game over! Player {winner_id} has won")
+        self.controller.game_over(winner_id)
     def wait_for_game(self,number_of_players):
         '''Wait for a game to start'''
         self.controller.players_in_lobby = number_of_players

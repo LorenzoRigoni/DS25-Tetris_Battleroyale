@@ -12,6 +12,8 @@ class TetrisController:
     def __init__(self,player_number = 9):
         self.running = True
         self.game_over = False 
+        self.searching = True
+        self.paused = False
         self.player_number = player_number
         # Initialize the model, view, and game settings
         self.model = TetrisModel(self)
@@ -21,7 +23,6 @@ class TetrisController:
         self.fast_fall = False
         self.last_move_time = pygame.time.get_ticks()
         self.move_cooldown = 200  # Cooldown for lateral movement (in milliseconds)
-        self.searching = True
 
         
         #initilize grids and pieces
@@ -52,16 +53,26 @@ class TetrisController:
                     self.model.hold_current_piece()
                 elif event.key == pygame.K_m:  # Add a gray line with a random hole
                     self.model.add_broken_line()
-    #TODO remove 10 as default value also this is only for client, no server implementation yet
+                elif event.key == pygame.K_ESCAPE:  # Quit the game
+                    self.paused = not self.paused
+
     def run(self):
         
-        print("Starting search...")
-        while self.searching:
-            # Search for a game
+        while self.running and self.searching:
             self.view.display_searching(self.players_in_lobby)
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:  # Quit the game
+                        self.paused = not self.paused
+            if self.paused:
+                return_menu_button = self.view.display_pause()
+                #if clicked return to menu button, exit the game
+                if return_menu_button.collidepoint(pygame.mouse.get_pos()):
+                    if pygame.mouse.get_pressed()[0]:
+                        self.client.send_player_disconnected()
+                        print("Player disconnected")
+                        self.running = False
+            self.view.update_all()
         
         while self.running:
             #update enemies with random values for testing
@@ -91,7 +102,9 @@ class TetrisController:
                 if current_time - self.last_fall_time > (self.fall_speed // 10 if self.fast_fall else self.fall_speed):
                     if not self.model.move_piece(0, 1):
                         # Lock the piece and check for game over
-                        game_over = self.model.lock_piece()
+                        self.game_over = self.model.lock_piece()
+                        if self.game_over:
+                            self.send_defeat()
                         lines_cleared = self.model.clear_lines()
                         if lines_cleared:
                             print(f"Lines cleared: {lines_cleared}")
@@ -103,8 +116,6 @@ class TetrisController:
                 # Send the game state to the server
                 
             else:
-                print("Game over")
-                self.send_defeat()
                 # Game over state
                 self.view.display_game_over()
                 # Wait for a key press to quit

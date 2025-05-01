@@ -133,6 +133,7 @@ class TetrisModel:
         # Move the piece down until it collides
         while self.move_piece(0, 1):
             pass
+        
         self.lock_piece()
         lines_cleared = self.clear_lines()
         if lines_cleared:

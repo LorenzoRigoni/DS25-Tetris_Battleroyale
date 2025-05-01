@@ -126,6 +126,7 @@ class Server:
 
     def handle_disconnection(self, player_id):
         '''Handle the dicconction of a player'''
+        print(f"Player {player_id} disconnected")
         if player_id in self.player_and_game:
             self.handle_defeat(player_id)
             del self.player_and_game[player_id]

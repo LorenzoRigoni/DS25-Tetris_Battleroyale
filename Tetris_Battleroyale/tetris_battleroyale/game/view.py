@@ -54,8 +54,8 @@ class TetrisView:
         #draw a white border around the main game view
         pygame.draw.rect(self.screen, WHITE, (main_x - 5, main_y - 5, GAME_SCREEN_WIDTH + 10, GAME_SCREEN_HEIGHT + 10), 2)
 
-        pygame.display.flip()
-        self.clock.tick(30)
+        #pygame.display.flip()
+        #self.clock.tick(30)
     
     def display_searching(self,number_out_of_9):
         # Display the searching screen
@@ -64,4 +64,29 @@ class TetrisView:
         text = font.render(f"Searching for a game... {number_out_of_9}/9", True, WHITE)
         text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(text, text_rect)
+    #pause screen with button to exit to main menu
+    def display_pause(self):
+        # Display the pause screen
+        font = pygame.font.Font(None, 74)
+        text = font.render("Paused", True, WHITE)
+        text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50))
+        self.screen.blit(text, text_rect)
+
+        # Button to exit to main menu
+        button_text = font.render("Exit to Main Menu", True, BLACK)
+        button_rect = button_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50))
+        pygame.draw.rect(self.screen, WHITE, button_rect.inflate(20, 20), 0)
+        self.screen.blit(button_text, button_rect)
+        return button_rect
+
+    
+    def display_game_over(self):
+        # Display the game over screen
+        font = pygame.font.Font(None, 74)
+        text = font.render("Game Over", True, WHITE)
+        text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+        self.screen.blit(text, text_rect)
+
+    def update_all(self):
         pygame.display.flip()
+        self.clock.tick(30)

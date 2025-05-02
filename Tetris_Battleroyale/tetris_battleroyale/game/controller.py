@@ -123,35 +123,33 @@ class TetrisController:
 
 
         pygame.quit()
-    def updateEnemies(self, playerNumber, grid, current_piece):
-        #upodate the grids and piece of the players
+
+    def receive_game_state(self, playerNumber, grid, current_piece, player_name):
         self.grids[playerNumber] = grid
         self.current_pieces[playerNumber] = current_piece
 
     def send_game_state(self):
-            self.client.send_game_state(self.model.grid, self.server.lobby_id, self.model.current_piece)
+        self.client.send_game_state(self.model.grid, self.model.current_piece)
+
     def send_broken_row(self):
-            print(self.player_number)
-            self.client.send_broken_row(1-self.client.player_id)
+        print(self.player_number)
+        self.client.send_broken_row()
+
     def send_defeat(self):
-            self.client.send_defeat()
-    def receive_broken_line(self):
+        self.client.send_defeat()
+
+    def receive_broken_line(self, player_name):
         self.model.add_broken_line()
     
-    def receive_defeat(self, player_id):
+    def receive_defeat(self, player_id, player_name):
         self.defeats[player_id] = True
-    
-    def receive_game_state(self, grid, current_piece):
-        # Update the game state of the player
-        self.model.grid = grid
-        self.model.current_piece = current_piece
-        self.model.updateEnemies(self.player_number, grid, current_piece)
+
     def handle_pause(self):
         if self.paused:
-                return_menu_button = self.view.display_pause()
-                #if clicked return to menu button, exit the game
-                if return_menu_button.collidepoint(pygame.mouse.get_pos()):
-                    if pygame.mouse.get_pressed()[0]:
-                        self.client.send_player_disconnected()
-                        print("Player disconnected")
-                        self.running = False
+            return_menu_button = self.view.display_pause()
+            #if clicked return to menu button, exit the game
+            if return_menu_button.collidepoint(pygame.mouse.get_pos()):
+                if pygame.mouse.get_pressed()[0]:
+                    self.client.send_player_disconnected()
+                    print("Player disconnected")
+                    self.running = False

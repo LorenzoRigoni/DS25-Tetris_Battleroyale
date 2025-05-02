@@ -7,13 +7,14 @@ import traceback
 class Server:
     def __init__(self):
         self.host = "127.0.0.1"
-        self.port = 10000
+        self.port = 8080
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind((self.host, self.port))
         self.last_seen = {}
         self.player_and_addr = {}
         self.addr_and_player = {}
+        self.player_and_name = {}
 
         self.player_id_counter = 0
         self.games_id = 0
@@ -28,7 +29,7 @@ class Server:
         '''Start the server'''
         while True:
             try:
-                data, addr = self.socket.recvfrom(10240)
+                data, addr = self.socket.recvfrom(4096)
                 p_type, p_data = Package.decode(data)
                 self.handle_received_packet(addr, p_type, p_data)
             except Exception as e:
@@ -48,7 +49,7 @@ class Server:
         #print(f"Received packet of type {p_type} from {addr}")
         '''Handle the client requests'''
         if p_type == Package.HAND_SHAKE:
-            self.hand_shake(addr)
+            self.hand_shake(addr, p_data["player_name"])
         elif p_type == Package.HEARTBEAT:
             self.last_seen[addr] = time.time()
         elif p_type == Package.START_SEARCH:
@@ -62,12 +63,13 @@ class Server:
         elif p_type == Package.PLAYER_LEFT:
             self.handle_disconnection(int(p_data["player_id"]))
 
-    def hand_shake(self, addr):
+    def hand_shake(self, addr, player_name):
         '''When client connects to the server for the first time, the server sends the id of the player associated to the client.'''
         actual_counter = self.player_id_counter
         self.player_id_counter += 1
         self.player_and_addr[actual_counter] = addr
         self.addr_and_player[addr] = actual_counter
+        self.player_and_name[actual_counter] = player_name
         self.player_and_game[actual_counter] = self.check_availables_games()
         print(f"Player {actual_counter} connected from {addr} and {self.player_and_game}")
         self.send_message(Package.HAND_SHAKE, addr, player_id = actual_counter)
@@ -99,24 +101,24 @@ class Server:
     
     def send_game_state(self, player_id, grid, current_piece):
         '''Send the game state of a player to all others players of the game'''
-        self.send_broadcast_message(self.player_and_game[player_id], player_id, Package.GAME_STATE, grid = grid, current_piece = current_piece, sender= player_id)
+        self.send_broadcast_message(self.player_and_game[player_id], player_id, Package.GAME_STATE, p_id = player_id, grid = grid, current_piece = current_piece, player_name = self.player_and_game[player_id])
 
     def send_broken_row(self, player_id):
         '''Send the broken row to all the players of the game'''
         print("mando")
-        self.send_broadcast_message(self.player_and_game[player_id], player_id, Package.ROW_RECEIVED)
-        
+        self.send_broadcast_message(self.player_and_game[player_id], player_id, Package.ROW_RECEIVED, player_name = self.player_and_name[player_id])
 
     def handle_defeat(self, player_id):
         '''Handle the defeat of a player and checks if the game is over'''
-        self.send_broadcast_message(self.player_and_game[player_id],player_id,Package.PLAYER_DEFEATED)
+        self.send_broadcast_message(self.player_and_game[player_id], player_id, Package.PLAYER_DEFEATED, p_id = player_id, player_name = self.player_and_name[player_id])
         if self.games[self.player_and_game[player_id]].is_game_over(player_id):
             winner = self.games[self.player_and_game[player_id]].get_winner_id()
             self.send_broadcast_message(
                 self.player_and_game[player_id],
                 player_id,
                 Package.GAME_OVER,
-                winner=winner  # Only winner is passed as a keyword arg
+                winner_id = winner,
+                winner_name = self.player_and_name[winner]
             )
             
             finished_game_id = self.player_and_game[player_id]
@@ -150,6 +152,5 @@ class Server:
             opponents = [addr for p_id, addr in self.player_and_addr.items() if p_id != player_id and self.player_and_game[p_id] == game_id]
         else:
            opponents = [addr for p_id, addr in self.player_and_addr.items() if self.player_and_game[p_id] == game_id]
-        #print(f"Sending message to {len(opponents)} players")
         for addr in opponents:
             self.send_message(packet_type, addr, **kwargs)

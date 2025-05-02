@@ -4,13 +4,14 @@ import time
 from utils.package import Package
 from remote.game_room import GameRoom
 import traceback
+
 class Server:
     def __init__(self):
         self.host = "127.0.0.1"
         self.port = 8080
 
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.bind((self.host, self.port))
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.bind((self.host, self.port))
         self.last_seen = {}
         self.player_and_addr = {}
         self.addr_and_player = {}
@@ -29,12 +30,18 @@ class Server:
         '''Start the server'''
         while True:
             try:
-                data, addr = self.socket.recvfrom(4096)
+                data, addr = self.sock.recvfrom(4096)
                 p_type, p_data = Package.decode(data)
                 self.handle_received_packet(addr, p_type, p_data)
+            except ConnectionResetError as e:
+                print("Error from ", addr, " ", e)
+                if addr in self.addr_and_player:
+                    self.handle_disconnection(self.addr_and_player[addr])
+                continue
             except Exception as e:
                 print(f"Error in the receivment of a packet on the server: {e}")
                 traceback.print_exc()
+                continue
 
     def timeout_monitor(self):
         '''Check if all the clients are still connected'''
@@ -128,14 +135,14 @@ class Server:
                     del self.player_and_game[p_id]
 
     def handle_disconnection(self, player_id):
-        '''Handle the dicconction of a player'''
-        print(f"Player {player_id} disconnected")
+        '''Handle the disconnection of a player'''
+        print(f"Player {player_id} disconnected => {self.player_and_addr[player_id]}")
         if player_id in self.player_and_game:
             self.handle_defeat(player_id)
-            del self.player_and_game[player_id]
         
         del self.last_seen[self.player_and_addr[player_id]]
         del self.player_and_addr[player_id]
+        del self.player_and_name[player_id]
         for addr, p_id in list(self.addr_and_player.items()):
             if p_id == player_id:
                 del self.addr_and_player[addr]
@@ -144,7 +151,7 @@ class Server:
     def send_message(self, packet_type, addr, **kwargs):
         '''Send a message to a specific client'''
         packet = Package.encode(packet_type, **kwargs)
-        self.socket.sendto(packet, addr)
+        self.sock.sendto(packet, addr)
 
     def send_broadcast_message(self, game_id, player_id, packet_type, **kwargs):
         '''Send a message to all the players of a game'''

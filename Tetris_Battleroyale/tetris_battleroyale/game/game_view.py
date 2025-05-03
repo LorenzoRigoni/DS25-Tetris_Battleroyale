@@ -3,6 +3,7 @@
 import pygame
 from utils.vars import *
 
+WIDTH, HEIGHT = 400, 350
 
 class GameView:
     PERSONAL_BLOCK_SIZE =BLOCK_SIZE
@@ -136,12 +137,23 @@ class GameView:
                         return True
         return False
 
-    def display_game_over(self, screen):
-        # Display the game over text
-        font = pygame.font.SysFont(None, 74)
-        game_over_text = font.render("GAME OVER", True, (255, 0, 0))
-        screen.blit(game_over_text, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2 - 50))
-        pygame.display.flip()
+    def display_game_over(self, screen, main):
+        # Display the game over text if not main put a cross over it
+        font = pygame.font.SysFont(None, 48)
+        game_over_text = font.render("GAME OVER", True, WHITE)
+        #put game over text in the middle of the screen
+        text_rect = game_over_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        screen.blit(game_over_text, text_rect)
+        
+
+        if not main:
+            cross_color = (255, 0, 0)
+            cross_width = 5
+            pygame.draw.line(screen, cross_color, (0, 0), (WIDTH/2, HEIGHT), cross_width)
+            pygame.draw.line(screen, cross_color, (WIDTH/2, 0), (0, HEIGHT), cross_width)
+        
+    
+        
 
     def update(self, grid, current_piece, next_piece, hold_piece, game_over=False):
         # Update the display with the current game state
@@ -152,8 +164,7 @@ class GameView:
         if self.main:
             self.draw_next_piece(self.screen, next_piece)
             self.draw_hold_piece(self.screen, hold_piece)  # Draw the hold piece
-        #TODO diverso se è il main o no
         if game_over:
-            self.display_game_over(self.screen)
+            self.display_game_over(self.screen,self.main)
        
         self.clock.tick(30)

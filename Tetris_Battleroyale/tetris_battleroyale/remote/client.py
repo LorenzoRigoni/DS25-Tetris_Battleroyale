@@ -1,16 +1,18 @@
 import socket
 import threading
 import time
-from utils.package import Package
+from remote.package import Package
 import traceback
 
 class Client:
-    '''Manage the communication of the client (only non-game aspects)'''
+    '''Manage the communication of the client'''
 
     def __init__(self, player_name, controller):
         self.player_name = player_name
         self.player_id = 0
-        self.server_addr = ("127.0.0.1", 8080)
+        self.primary_server_addr = ("127.0.0.1", 8080)
+        self.backup_server_addr = ("127.0.0.1", 8081)
+        self.active_server_addr = self.primary_server_addr
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.running = True
         self.controller = controller
@@ -21,15 +23,31 @@ class Client:
             self.send(Package.HEARTBEAT)
             time.sleep(2)
 
+    def monitor_server(self, timeout = 2.0):
+        '''Check if the current server used is active'''
+        ping_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        ping_socket.settimeout(timeout)
+
+        while self.running:
+            try:
+                ping_socket.sendto(Package.encode(Package.PING), self.active_server_addr)
+                res = self.client_socket.recv(4096)
+            except socket.timeout:
+                print("Cambio server per timeout")
+                self.active_server_addr = self.backup_server_addr if self.active_server_addr == self.primary_server_addr else self.primary_server_addr
+                continue
+            except Exception:
+                print("Cambio server per eccezione")
+                self.active_server_addr = self.backup_server_addr if self.active_server_addr == self.primary_server_addr else self.primary_server_addr
+                continue
+            time.sleep(2)
+
+        ping_socket.close()
+
     def start(self):
         '''Starts the client'''
-        try:
-            self.client_socket.connect(self.server_addr)
-        except Exception as e:
-            self.running = False
-            self.client_socket.close()
-
         self.send(Package.HAND_SHAKE, player_name = self.player_name)
+        threading.Thread(target=self.monitor_server, daemon=True).start()
         threading.Thread(target=self.send_heartbeat, daemon=True).start()
 
         while self.running:
@@ -37,10 +55,11 @@ class Client:
                 package = self.client_socket.recv(4096)
                 type, data = Package.decode(package)
                 self.handle_received_packet(type, data)
+            except OSError as e:
+                if e.winerror == 10054:
+                    continue
             except Exception as e:
-                print(f"Client error: {e}")
                 traceback.print_exc()
-                self.running = False
 
     def start_game_search(self):
         '''Start the search of a game'''
@@ -109,5 +128,6 @@ class Client:
 
     def send(self, packet_type, **kwargs):
         '''Send a packet to the server'''
-        data = Package.encode(packet_type, **kwargs)
-        self.client_socket.send(data)
+        packet = Package.encode(packet_type, **kwargs)
+        print("Invio pacchetto a ", self.active_server_addr)
+        self.client_socket.sendto(packet, self.active_server_addr)

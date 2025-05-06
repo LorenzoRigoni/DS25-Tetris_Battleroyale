@@ -1,11 +1,6 @@
 import pygame
-import subprocess
-import socket
-import time
-from remote.server import Server
 from remote.client import Client
 from game.controller import TetrisController
-from utils.package import Package
 import threading
 
 WIDTH, HEIGHT = 400, 350

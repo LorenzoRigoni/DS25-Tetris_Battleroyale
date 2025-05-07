@@ -23,7 +23,7 @@ class Client:
             self.send(Package.HEARTBEAT)
             time.sleep(2)
 
-    def monitor_server(self, timeout = 2.0):
+    def monitor_server(self, timeout = 3.0):
         '''Check if the current server used is active'''
         ping_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         ping_socket.settimeout(timeout)

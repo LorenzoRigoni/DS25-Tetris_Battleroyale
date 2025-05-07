@@ -38,10 +38,11 @@ class BackupServer(Server):
             try:
                 data, addr = self.backup_sock.recvfrom(4096)
                 type, p_data = Package.decode(data)
-                if addr == self.primary_addr and type == Package.PRIMARY_HEARTBEAT and self.active:
+                if type == Package.PRIMARY_HEARTBEAT:
                     self.last_primary_heartbeat = time.time()
-                    self.stop_backup()
-                elif type == Package.PING and not self.active:
+                    if self.active:
+                        self.stop_backup()
+                elif type == Package.PING and not self.active and time.time() - self.last_primary_heartbeat > 3:
                     self.replace_primary_server()
                 else:
                     self.handle_received_packet(addr, type, p_data)

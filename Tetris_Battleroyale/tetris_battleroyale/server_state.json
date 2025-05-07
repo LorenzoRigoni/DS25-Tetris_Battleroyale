@@ -1,1 +1,1 @@
-{"player_and_addr": {"0": ["127.0.0.1", 58799], "1": ["127.0.0.1", 52208]}, "addr_and_player": {"127.0.0.1::58799": 0, "127.0.0.1::52208": 1}, "player_and_name": {"0": "a", "1": "b"}, "player_and_game": {}, "player_id_counter": 2, "games_id": 0, "games": []}
+{"player_and_addr": {}, "addr_and_player": {}, "player_and_name": {}, "player_and_game": {}, "player_id_counter": 2, "games_id": 0, "games": []}

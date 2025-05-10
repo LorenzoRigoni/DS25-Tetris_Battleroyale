@@ -101,7 +101,7 @@ class Client:
     def receive_game_over(self, winner_id, winner_name):
         '''Receive the game over'''
         print(f"Game over! Player {winner_id} has won")
-        self.controller.game_over(winner_id, winner_name)
+        self.controller.receive_game_over(winner_id, winner_name)
 
     def wait_for_game(self, number_of_players):
         '''Wait for a game to start'''

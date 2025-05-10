@@ -89,6 +89,12 @@ class TetrisView:
         text = font.render("Game Over", True, WHITE)
         text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(text, text_rect)
+    def display_winner(self, winner_name):
+        # Display the winner screen
+        font = pygame.font.Font(None, 74)
+        text = font.render(f"{winner_name} wins!", True, WHITE)
+        text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+        self.screen.blit(text, text_rect)
 
     def update_all(self):
         pygame.display.flip()

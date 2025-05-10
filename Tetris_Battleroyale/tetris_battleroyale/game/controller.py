@@ -9,9 +9,11 @@ import time
 class TetrisController:
     current_lobby_id=0
     players_in_lobby=0
+    winner_name = ""
     def __init__(self,player_number = 9):
         self.running = True
         self.game_over = False 
+        self.game_ended= False
         self.searching = True
         self.paused = False
         self.player_number = player_number
@@ -108,15 +110,18 @@ class TetrisController:
                 # Send the game state to the server
                 
             else:
-                # Game over state
-                self.view.display_game_over()
-                # Wait for a key press to quit
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        running = False
-                    elif event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_ESCAPE:
+                if self.game_ended:
+                    self.view.display_winner(self.winner_name)
+                else:
+                    # Game over state
+                    self.view.display_game_over()
+                    # Wait for a key press to quit
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
                             running = False
+                        elif event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE:
+                                running = False
             self.handle_pause()
             self.view.update_all()
 
@@ -153,3 +158,15 @@ class TetrisController:
                     self.client.send_player_disconnected()
                     print("Player disconnected")
                     self.running = False
+    def receive_game_over(self, winner_id, winner_name):
+        self.game_ended = True
+        self.game_over = True
+        self.winner_name = winner_name
+        self.view.display_winner(winner_name)
+        # Wait for a key press to quit
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False

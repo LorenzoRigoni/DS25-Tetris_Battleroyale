@@ -6,7 +6,7 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from utils.package import Package
+from Tetris_Battleroyale.tetris_battleroyale.remote.package import Package
 
 @pytest.fixture
 def server_socket():

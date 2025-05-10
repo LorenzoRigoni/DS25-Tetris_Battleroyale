@@ -6,6 +6,23 @@ class GameRoom:
         self.players_id: list[int] = []
         self.available = True
 
+    def to_dict(self):
+        '''Create a dictionary with the information of the room'''
+        return {
+            "players_id": self.players_id,
+            "game_id": self.game_id,
+            "available": self.available
+        }
+    
+    @classmethod
+    def from_dict(cls, data):
+        '''Create a new istance of the room with the new values'''
+        new_room = cls()
+        new_room.players_id = data["players_id"]
+        new_room.game_id = data["game_id"]
+        new_room.available = data["available"]
+        return new_room
+
     def add_player(self, player_id):
         '''Add a player in the game.
         Return true if the game can start, false otherwise'''

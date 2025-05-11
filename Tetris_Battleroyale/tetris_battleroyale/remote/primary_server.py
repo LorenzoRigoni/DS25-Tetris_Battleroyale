@@ -6,7 +6,7 @@ from remote.package import Package
 
 class PrimaryServer(Server):
     '''This class represents the primary server. Every 2 seconds, it sends to the backup server its heartbeat.
-    If the primary server do not send its heartbeat for more tha 5 seconds, the backup sever is promoted to primary.'''
+    If the primary server do not send its heartbeat for more than 5 seconds, the backup sever is promoted to primary.'''
 
     def __init__(self, host="127.0.0.1", port=8080):
         super().__init__(host, port, True, None)

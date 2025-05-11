@@ -16,7 +16,7 @@ class Client:
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.running = True
         self.controller = controller
-        self.player_name = player_name
+        self.is_handshake_ok = False
 
     def send_heartbeat(self):
         while self.running:
@@ -33,11 +33,9 @@ class Client:
                 ping_socket.sendto(Package.encode(Package.PING), self.active_server_addr)
                 res = self.client_socket.recv(4096)
             except socket.timeout:
-                print("Cambio server per timeout")
                 self.active_server_addr = self.backup_server_addr if self.active_server_addr == self.primary_server_addr else self.primary_server_addr
                 continue
             except Exception:
-                print("Cambio server per eccezione")
                 self.active_server_addr = self.backup_server_addr if self.active_server_addr == self.primary_server_addr else self.primary_server_addr
                 continue
             time.sleep(2)
@@ -86,6 +84,7 @@ class Client:
         '''Handle the data received from the server'''
         if type == Package.HAND_SHAKE:
             self.player_id = int(data["player_id"])
+            self.is_handshake_ok = True
         elif type == Package.WAIT_FOR_GAME:
             self.wait_for_game(int(data["number_of_players"]))
         elif type == Package.GAME_START:

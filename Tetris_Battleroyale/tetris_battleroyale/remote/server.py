@@ -113,7 +113,7 @@ class Server:
         Return -1 if all the games are full, otherwise the id of the first game not full'''
         for game in self.state.games:
             if game.is_room_available():
-                return game_id
+                return game.game_id
         return -1
 
     def send_game_state(self, player_id, grid, current_piece):

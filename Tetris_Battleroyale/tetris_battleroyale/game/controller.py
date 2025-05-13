@@ -104,26 +104,29 @@ class TetrisController:
                             print(f"Lines cleared: {lines_cleared}")
                     self.last_fall_time = current_time
                     self.client.send_game_state(self.model.grid,self.model.current_piece)
-
-                # Update the view
-                self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, self.game_over,self.defeats)
-                # Send the game state to the server
                 
             else:
                 if self.game_ended:
                     self.view.display_winner(self.winner_name)
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            self.running = False
+                        elif event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE:
+                                self.paused = not self.paused
                 else:
                     # Game over state
                     self.view.display_game_over()
                     # Wait for a key press to quit
                     for event in pygame.event.get():
                         if event.type == pygame.QUIT:
-                            running = False
+                            self.running = False
                         elif event.type == pygame.KEYDOWN:
                             if event.key == pygame.K_ESCAPE:
-                                running = False
-            self.handle_pause()
+                                self.paused = not self.paused
             self.view.update_all()
+            self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, self.game_over,self.defeats)
+            self.handle_pause()
 
 
 

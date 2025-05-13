@@ -36,7 +36,7 @@ class BackupServer(Server):
     def check_primary_is_alive(self):
         while self.running:
             try:
-                data, addr = self.backup_sock.recvfrom(4096)
+                data, addr = self.backup_sock.recvfrom(8192)
                 type, p_data = Package.decode(data)
                 if type == Package.PRIMARY_HEARTBEAT:
                     self.last_primary_heartbeat = time.time()

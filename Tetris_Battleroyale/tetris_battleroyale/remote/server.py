@@ -37,7 +37,7 @@ class Server:
         threading.Thread(target=self.receive_ping_and_heartbeat, daemon=True).start()
         while self.running:
             try:
-                data, addr = self.sock.recvfrom(4096)
+                data, addr = self.sock.recvfrom(8192)
                 p_type, p_data = Package.decode(data)
                 self.handle_received_packet(addr, p_type, p_data)
             except ConnectionResetError as e:
@@ -67,7 +67,7 @@ class Server:
         '''Receive the client ping and heartbeat messages'''
         while self.running:
             try:
-                data, addr = self.ping_sock.recvfrom(4096)
+                data, addr = self.ping_sock.recvfrom(8192)
                 p_type, p_data = Package.decode(data)
                 if p_type == Package.HEARTBEAT:
                     self.last_seen[int(p_data["player_id"])] = time.time()

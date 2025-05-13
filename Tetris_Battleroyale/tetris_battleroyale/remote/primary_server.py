@@ -22,7 +22,7 @@ class PrimaryServer(Server):
     def receive_backup_ready(self):
         while True:
             try:
-                data, addr = self.sock.recvfrom(4096)
+                data, addr = self.sock.recvfrom(8192)
                 type, content = Package.decode(data)
 
                 if type == Package.BACKUP_READY:

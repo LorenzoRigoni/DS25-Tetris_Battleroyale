@@ -175,8 +175,7 @@ class TetrisModel:
         
         # Create a new line with one random hole
         new_line = [gray_color for _ in range(COLS)]  # Fill the line with gray blocks
-        #hole_index = random.randint(0, COLS - 1)  # Randomly choose an index for the hole
-        hole_index=0
+        hole_index = random.randint(0, COLS - 1)  # Randomly choose an index for the hole
         new_line[hole_index] = 0  # Set the hole (0 means empty)
 
         # Add the new line at the bottom

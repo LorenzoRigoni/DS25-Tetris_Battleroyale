@@ -25,7 +25,7 @@ class Client:
         while self.running:
             try:
                 ping_socket.sendto(Package.encode(Package.HEARTBEAT, player_id = self.player_id), self.ping_addr)
-                _ = ping_socket.recv(4096)
+                _ = ping_socket.recv(8192)
             except socket.timeout:
                 self.active_server_addr = self.backup_server_addr if self.active_server_addr == self.primary_server_addr else self.primary_server_addr
                 ping_socket.sendto(Package.encode(Package.HEARTBEAT, player_id = self.player_id), self.active_server_addr)
@@ -41,7 +41,7 @@ class Client:
 
         while self.running:
             try:
-                package, _ = self.client_socket.recvfrom(4096)
+                package, _ = self.client_socket.recvfrom(8192)
                 type, data = Package.decode(package)
                 self.handle_received_packet(type, data)
             except OSError as e:

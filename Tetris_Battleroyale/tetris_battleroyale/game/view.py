@@ -4,7 +4,7 @@ import pygame
 from game.game_view import GameView
 from utils.vars import *
 
-SCREEN_WIDTH = 1200
+SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 800
 
 class TetrisView:
@@ -17,7 +17,7 @@ class TetrisView:
 
         # Create 5 game views: 4 small ones and 1 main one
         self.game_views = []
-        for i in range(8):
+        for i in range(4):
             # Create a new Surface for each small game view
             game_surface = pygame.Surface((GAME_SCREEN_WIDTH // 2, GAME_SCREEN_HEIGHT // 2))
             game_view = GameView(main=False, screen=game_surface)
@@ -27,7 +27,7 @@ class TetrisView:
         main_surface = pygame.Surface((GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT))
         self.main_game_view = GameView(main=True, screen=main_surface)
 
-    def update(self, grid, current_piece,grids, current_pieces, next_piece, hold_piece, game_over,games_over):
+    def update(self, grid, current_piece,grids, current_pieces, next_piece, hold_piece, game_over,games_over,name,names):
         # Clear the main screen
         self.screen.fill(BLACK)
 
@@ -43,19 +43,28 @@ class TetrisView:
             #draw a white border around the game view
             pygame.draw.rect(game_surface, WHITE, (0, 0, small_width, small_height), 2)
 
+            #put player name on the game view on top of the game view
+            font = pygame.font.Font(None, 36)
+            text = font.render(names[i], True, WHITE)
+            text_rect = text.get_rect(center=(small_width // 2, 18))
+            game_surface.blit(text, text_rect)
+
             # Blit the game view's surface onto the main screen
             self.screen.blit(game_surface, (x, y))
         # Draw the main game view
-        main_x = SCREEN_WIDTH // 3
+        main_x = SCREEN_WIDTH // 2
         main_y = 0
 
         # Update the main game view on its own surface
         self.main_game_view.update(grid, current_piece, next_piece, hold_piece, game_over)
 
+        #draw name of the player on the main game view
+        font = pygame.font.Font(None, 36)
+        text = font.render(name, True, WHITE)
+        text_rect = text.get_rect(center=(GAME_SCREEN_WIDTH // 2, 18))
+        self.main_game_view.screen.blit(text, text_rect)
         # Blit the main game view's surface onto the main screen
         self.screen.blit(self.main_game_view.screen, (main_x, main_y))
-        #draw a white border around the main game view
-        pygame.draw.rect(self.screen, WHITE, (main_x, main_y, GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT), 2)
 
         #pygame.display.flip()
         #self.clock.tick(30)

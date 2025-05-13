@@ -10,7 +10,9 @@ class TetrisController:
     current_lobby_id=0
     players_in_lobby=0
     winner_name = ""
-    def __init__(self,player_number = 9):
+    names=[]
+    def __init__(self,name,player_number = 9 ):
+        self.name= name
         self.running = True
         self.game_over = False 
         self.game_ended= False
@@ -40,6 +42,7 @@ class TetrisController:
                     self.grids[i] = [[0 for _ in range(COLS)] for _ in range(ROWS)]
                     self.current_pieces[i] = {'shape': [[1, 1, 1], [0, 1, 0]], 'color': (255, 0, 0), 'x': 3, 'y': 0}
                     self.defeats[i] = False
+                    self.names.append("")
             
     def handle_events(self):
         # Handle user input events
@@ -125,7 +128,7 @@ class TetrisController:
                             if event.key == pygame.K_ESCAPE:
                                 self.paused = not self.paused
             self.view.update_all()
-            self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, self.game_over,self.defeats)
+            self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, self.game_over,self.defeats,self.name,self.names)
             self.handle_pause()
 
 
@@ -135,7 +138,7 @@ class TetrisController:
     def receive_game_state(self, playerNumber, grid, current_piece, player_name):
         self.grids[playerNumber] = grid
         self.current_pieces[playerNumber] = current_piece
-
+        self.names[playerNumber] = player_name
     def send_game_state(self):
         self.client.send_game_state(self.model.grid, self.model.current_piece)
 

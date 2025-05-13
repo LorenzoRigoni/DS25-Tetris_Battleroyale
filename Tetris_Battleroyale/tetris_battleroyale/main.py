@@ -31,7 +31,7 @@ class TetrisLauncher:
         self.screen.blit(txt, (rect.x + 10, rect.y + 8))
 
     def start(self):
-        controller = TetrisController()
+        controller = TetrisController(self.name)
         client = Client(self.name, controller)
         controller.client = client
         client_thread = threading.Thread(target=client.start, daemon=True)

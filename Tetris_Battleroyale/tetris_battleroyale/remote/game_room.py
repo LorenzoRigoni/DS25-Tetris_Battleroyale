@@ -39,8 +39,7 @@ class GameRoom:
 
     def can_game_start(self):
         '''Check if the game can start'''
-        print(f"Game {self.game_id} is full: {len(self.players_id)} players")
-        return len(self.players_id) >= self.min_num_players_to_start
+        return len(self.players_id) == self.min_num_players_to_start
     
     def is_room_available(self):
         '''Check if room is available'''
@@ -54,9 +53,8 @@ class GameRoom:
         '''Returns the game id'''
         return self.game_id
     
-    def is_game_over(self, player_id):
-        '''Removes the defeated player and checks if the game is over'''
-        self.players_id.remove(player_id)
+    def is_game_over(self):
+        '''Check if the game is over'''
         return len(self.players_id) == 1
     
     def get_winner_id(self):

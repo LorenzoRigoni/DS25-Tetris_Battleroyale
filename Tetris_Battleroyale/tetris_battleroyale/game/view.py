@@ -64,7 +64,7 @@ class TetrisView:
         # Display the searching screen
         self.screen.fill(BLACK)
         font = pygame.font.Font(None, 74)
-        text = font.render(f"Searching for a game... {number_out_of_9}/9", True, WHITE)
+        text = font.render(f"Searching for a game... {number_out_of_9}/3", True, WHITE)
         text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(text, text_rect)
     #pause screen with button to exit to main menu

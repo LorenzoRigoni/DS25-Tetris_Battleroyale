@@ -3,7 +3,7 @@ from bson import BSON
 class Package:
     """Manage the content and the delivery of packages"""
     
-    HAND_SHAKE = "hand_shake"
+    HANDSHAKE = "hand_shake"
     PING = "ping"
     BACKUP_READY = "backup_ready"
     PRIMARY_HEARTBEAT = "primary_heartbeat"

@@ -37,6 +37,7 @@ class PrimaryServer(Server):
 
             except Exception as e:
                 print(f"[PRIMARY] Error receiving packet: {e}")
+                continue
 
     def send_heartbeat_to_backup(self):
         while self.backup_ready:

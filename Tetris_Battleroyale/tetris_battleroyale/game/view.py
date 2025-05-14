@@ -27,7 +27,7 @@ class TetrisView:
         main_surface = pygame.Surface((GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT))
         self.main_game_view = GameView(main=True, screen=main_surface)
 
-    def update(self, grid, current_piece,grids, current_pieces, next_piece, hold_piece, game_over,games_over,name,names, current_player_id):
+    def update(self, grid, current_piece,grids, current_pieces, next_piece, hold_piece, game_over,games_over,name,names):
         # Clear the main screen
         self.screen.fill(BLACK)
 
@@ -36,7 +36,6 @@ class TetrisView:
         small_height = GAME_SCREEN_HEIGHT // 2
         views_copy = self.game_views.copy()
         #remove the game view of the current player from the list of game views
-        #views_copy.pop(current_player_id)
         for i, (game_view, game_surface) in enumerate(views_copy):
             x = i % 2 * small_width + (GAME_SCREEN_WIDTH*2 if i >= 4 else 0)
             y = ((i// 2)%2) * small_height

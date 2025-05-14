@@ -130,7 +130,7 @@ class TetrisController:
                             if event.key == pygame.K_ESCAPE:
                                 self.paused = not self.paused
             self.view.update_all()
-            self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, self.game_over,self.defeats,self.name,self.names,self.player_id)
+            self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, self.game_over,self.defeats,self.name,self.names)
             self.handle_pause()
 
         pygame.quit()
@@ -155,7 +155,10 @@ class TetrisController:
         self.model.add_broken_line()
     
     def receive_defeat(self, player_id, player_name):
+        if player_id > self.player_id:
+            player_id -= 1
         self.defeats[player_id] = True
+        
 
     def handle_pause(self):
         if self.paused:

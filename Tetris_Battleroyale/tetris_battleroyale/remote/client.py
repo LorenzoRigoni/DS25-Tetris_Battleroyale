@@ -19,6 +19,7 @@ class Client:
         self.controller = controller
 
     def send_heartbeat(self, timeout = 2):
+        '''Sebd the heartbeat to the active server and check if the active server is still alive'''
         ping_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         ping_socket.settimeout(timeout)
 
@@ -103,17 +104,17 @@ class Client:
         '''Receive the game state of a player'''
         self.controller.receive_game_state(player_id, grid, current_piece, player_name)
 
-    def receive_broken_row(self, player_name):
+    def receive_broken_row(self):
         '''Receive a broken row'''
-        self.controller.receive_broken_line(player_name)
+        self.controller.receive_broken_line()
 
-    def receive_defeat(self, player_id, player_name):
+    def receive_defeat(self, player_id):
         '''Receive the defeat of a player'''
-        self.controller.receive_defeat(player_id, player_name)
+        self.controller.receive_defeat(player_id)
 
-    def receive_game_over(self, winner_id, winner_name):
+    def receive_game_over(self, winner_name):
         '''Receive the game over'''
-        self.controller.receive_game_over(winner_id, winner_name)
+        self.controller.receive_game_over(winner_name)
 
     def wait_for_game(self, number_of_players):
         '''Wait for a game to start'''

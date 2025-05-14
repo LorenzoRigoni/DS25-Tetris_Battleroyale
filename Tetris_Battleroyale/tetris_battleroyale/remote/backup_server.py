@@ -20,6 +20,7 @@ class BackupServer(Server):
         self.server: Server = None
 
     def start_backup(self):
+        '''Start the backup server'''
         try:
             self.backup_sock.sendto(Package.encode(Package.BACKUP_READY), self.primary_addr)
             self.check_primary_is_alive()
@@ -27,6 +28,7 @@ class BackupServer(Server):
             self.stop_backup()
 
     def stop_backup(self):
+        '''Stop the backup server'''
         self.running = False
         if self.server:
             self.server.running = False
@@ -34,6 +36,7 @@ class BackupServer(Server):
         self.active = False
 
     def check_primary_is_alive(self):
+        '''Check if primary server is alive'''
         while self.running:
             try:
                 data, addr = self.backup_sock.recvfrom(8192)
@@ -52,6 +55,7 @@ class BackupServer(Server):
                 print("Exception in the backup server: ", e)
 
     def replace_primary_server(self):
+        '''Replace the primary server'''
         super().__init__(self.backup_addr[0], self.backup_addr[1], False, self.backup_sock)
         self.active = True
         threading.Thread(target=self.start, daemon=True).start()

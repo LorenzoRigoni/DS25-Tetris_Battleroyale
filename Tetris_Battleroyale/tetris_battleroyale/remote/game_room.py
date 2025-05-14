@@ -1,4 +1,6 @@
 class GameRoom:
+    '''this class manage the game room'''
+    
     def __init__(self, game_id = -1):
         self.min_num_players_to_start = 5
 

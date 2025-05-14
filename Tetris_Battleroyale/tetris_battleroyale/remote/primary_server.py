@@ -15,18 +15,19 @@ class PrimaryServer(Server):
         self.backup_addr = None
 
     def start_primary(self):
-        print("[PRIMARY] Server started")
+        '''Start the primary server'''
         threading.Thread(target=self.receive_backup_ready, daemon=True).start()
         super().start()
 
     def receive_backup_ready(self):
+        '''Receive the packet of backup server ready'''
         while True:
             try:
                 data, addr = self.sock.recvfrom(8192)
                 type, content = Package.decode(data)
 
                 if type == Package.BACKUP_READY:
-                    print("[PRIMARY] Received BACKUP_CHECK from backup")
+                    print("Received BACKUP_CHECK from backup")
                     self.backup_ready = True
                     self.backup_addr = addr
                     if not self.heartbeat_started:
@@ -36,10 +37,11 @@ class PrimaryServer(Server):
                     self.handle_received_packet(addr, type, content)
 
             except Exception as e:
-                print(f"[PRIMARY] Error receiving packet: {e}")
+                print(f"Error receiving packet: {e}")
                 continue
 
     def send_heartbeat_to_backup(self):
+        '''Send heartbeat to backup server'''
         while self.backup_ready:
             try:
                 packet = Package.encode(Package.PRIMARY_HEARTBEAT)

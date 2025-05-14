@@ -7,6 +7,8 @@ from remote.game_room import GameRoom
 from remote.server_state import ServerState
 
 class Server:
+    '''This class manage all the server events'''
+
     def __init__(self, host, port, first_start, sock):
         self.host = host
         self.port = port
@@ -34,7 +36,7 @@ class Server:
     def start(self):
         '''Start the server'''
         threading.Thread(target=self.timeout_monitor, daemon=True).start()
-        threading.Thread(target=self.receive_ping_and_heartbeat, daemon=True).start()
+        threading.Thread(target=self.receive_heartbeat, daemon=True).start()
         while self.running:
             try:
                 data, addr = self.sock.recvfrom(8192)
@@ -64,8 +66,8 @@ class Server:
                     print("Disconnetto ", id, " per heartbeat")
                     self.handle_disconnection(id)
     
-    def receive_ping_and_heartbeat(self):
-        '''Receive the client ping and heartbeat messages'''
+    def receive_heartbeat(self):
+        '''Receive the client heartbeat messages'''
         while self.running:
             try:
                 data, addr = self.ping_sock.recvfrom(8192)
@@ -100,7 +102,6 @@ class Server:
         self.state.addr_and_player[addr] = actual_counter
         self.state.player_and_name[actual_counter] = player_name
         self.state.player_and_game[actual_counter] = self.check_availables_games()
-        print("Player ", actual_counter, " connesso da ", addr)
         self.state.save_locally()
         self.send_message(Package.HANDSHAKE, addr, player_id = actual_counter)
         self.start_game_search(actual_counter, self.state.player_and_game[actual_counter])

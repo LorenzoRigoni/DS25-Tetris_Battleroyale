@@ -1,5 +1,3 @@
-# controller.py
-
 import pygame
 from game.model import TetrisModel
 from game.view import TetrisView
@@ -7,6 +5,8 @@ from utils.vars import *
 import time
 
 class TetrisController:
+    '''This class is the controller of the MVC pattern. It manages the model and the view of the game.'''
+
     current_lobby_id=0
     players_in_lobby=0
     winner_name = ""
@@ -20,17 +20,14 @@ class TetrisController:
         self.searching = True
         self.paused = False
         self.player_number = player_number
-        # Initialize the model, view, and game settings
         self.model = TetrisModel(self)
         self.view = TetrisView()
         self.fall_speed = FALL_SPEED
         self.last_fall_time = pygame.time.get_ticks()
         self.fast_fall = False
         self.last_move_time = pygame.time.get_ticks()
-        self.move_cooldown = 200  # Cooldown for lateral movement (in milliseconds)
+        self.move_cooldown = 200
         
-        
-        #initilize grids and pieces
         self.grids = [None]*self.player_number
         self.current_pieces = [None]*self.player_number
         self.defeats = [False]*self.player_number
@@ -47,42 +44,40 @@ class TetrisController:
                     self.names[i] = ""
             
     def handle_events(self):
-        # Handle user input events
+        '''Handle user input events'''
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     self.model.rotate_piece_intelligently()
-                elif event.key == pygame.K_SPACE:  # Drop the piece to the bottom
+                elif event.key == pygame.K_SPACE:
                     self.model.drop_piece_to_bottom()
-                elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:  # Hold the piece
+                elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
                     self.model.hold_current_piece()
-                elif event.key == pygame.K_m:  # Add a gray line with a random hole
+                elif event.key == pygame.K_m:
                     self.model.add_broken_line()
-                elif event.key == pygame.K_ESCAPE:  # Quit the game
+                elif event.key == pygame.K_ESCAPE:
                     self.paused = not self.paused
 
     def run(self):
+        '''Run the game'''
         while self.running and self.searching:
             self.view.display_searching(self.players_in_lobby)
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:  # Quit the game
+                    if event.key == pygame.K_ESCAPE:
                         self.paused = not self.paused
             self.handle_pause()
             self.view.update_all()
-        print("Game started")
+        
         while self.running:
-            #update enemies with random values for testing
-            
             if not self.game_over:
                 self.handle_events()
 
                 keys = pygame.key.get_pressed()
                 current_time = pygame.time.get_ticks()
 
-                # Lateral movement with cooldown
                 if current_time - self.last_move_time > self.move_cooldown:
                     if keys[pygame.K_LEFT]:
                         self.model.move_piece(-1, 0)
@@ -91,16 +86,13 @@ class TetrisController:
                         self.model.move_piece(1, 0)
                         self.last_move_time = current_time
 
-                # Fast fall if the key is pressed
                 if keys[pygame.K_DOWN]:
                     self.fast_fall = True
                 else:
                     self.fast_fall = False
 
-                # Automatic piece falling
                 if current_time - self.last_fall_time > (self.fall_speed // 10 if self.fast_fall else self.fall_speed):
                     if not self.model.move_piece(0, 1):
-                        # Lock the piece and check for game over
                         self.game_over = self.model.lock_piece()
                         if self.game_over:
                             self.send_defeat()
@@ -109,7 +101,6 @@ class TetrisController:
                             print(f"Lines cleared: {lines_cleared}")
                     self.last_fall_time = current_time
                     self.client.send_game_state(self.model.grid,self.model.current_piece)
-                
             else:
                 if self.game_ended:
                     self.view.display_winner(self.winner_name)
@@ -120,9 +111,7 @@ class TetrisController:
                             if event.key == pygame.K_ESCAPE:
                                 self.paused = not self.paused
                 else:
-                    # Game over state
                     self.view.display_game_over()
-                    # Wait for a key press to quit
                     for event in pygame.event.get():
                         if event.type == pygame.QUIT:
                             self.running = False
@@ -136,6 +125,7 @@ class TetrisController:
         pygame.quit()
 
     def receive_game_state(self, playerNumber, grid, current_piece, player_name):
+        '''Receive game state from other user'''
         if playerNumber > self.player_id:
             playerNumber -= 1
         self.grids[playerNumber] = grid
@@ -143,24 +133,29 @@ class TetrisController:
         self.names[playerNumber] = player_name
 
     def send_game_state(self):
+        '''Send game state to all other users'''
         self.client.send_game_state(self.model.grid, self.model.current_piece)
 
     def send_broken_row(self):
+        '''Send broken row to all other users'''
         self.client.send_broken_row()
 
     def send_defeat(self):
+        '''Send defeat to all other users'''
         self.client.send_defeat()
 
-    def receive_broken_line(self, player_name):
+    def receive_broken_line(self):
+        '''Receive a broken row from a user'''
         self.model.add_broken_line()
     
-    def receive_defeat(self, player_id, player_name):
+    def receive_defeat(self, player_id):
+        '''Receive the defeat of a user'''
         if player_id > self.player_id:
             player_id -= 1
         self.defeats[player_id] = True
         
-
     def handle_pause(self):
+        '''Handle the pause of the game'''
         if self.paused:
             return_menu_button = self.view.display_pause()
             #if clicked return to menu button, exit the game
@@ -169,7 +164,9 @@ class TetrisController:
                     self.client.send_player_disconnected()
                     print("Player disconnected")
                     self.running = False
-    def receive_game_over(self, winner_id, winner_name):
+
+    def receive_game_over(self, winner_name):
+        '''Receive the name of the winner'''
         self.game_ended = True
         self.game_over = True
         self.winner_name = winner_name

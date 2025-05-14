@@ -4,7 +4,7 @@ from pathlib import Path
 from remote.game_room import GameRoom
 
 class ServerState:
-    '''This class saves the values of the varibales used by the server.'''
+    '''This class manages and saves the values of the varibales used by the server.'''
 
     def __init__(self, file_path="server_state.json"):
         self.file_path = Path(file_path)

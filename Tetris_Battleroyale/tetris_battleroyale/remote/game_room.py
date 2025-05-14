@@ -31,7 +31,8 @@ class GameRoom:
     
     def remove_player(self, player_id):
         '''Remove the player from the room'''
-        self.players_id.remove(player_id)
+        if player_id in self.players_id:
+            self.players_id.remove(player_id)
     
     def get_num_of_players(self):
         '''Return the number of players in the room'''

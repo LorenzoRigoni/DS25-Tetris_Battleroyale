@@ -18,7 +18,7 @@ class Client:
         self.running = True
         self.controller = controller
 
-    def send_heartbeat(self, timeout = 2):
+    def send_heartbeat(self, timeout = 3):
         ping_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         ping_socket.settimeout(timeout)
 
@@ -30,7 +30,7 @@ class Client:
                 self.active_server_addr = self.backup_server_addr if self.active_server_addr == self.primary_server_addr else self.primary_server_addr
                 ping_socket.sendto(Package.encode(Package.HEARTBEAT, player_id = self.player_id), self.active_server_addr)
                 continue
-            time.sleep(2)
+            time.sleep(1)
 
         ping_socket.close()
 
@@ -74,6 +74,7 @@ class Client:
         '''Handle the data received from the server'''
         if type == Package.HANDSHAKE:
             self.player_id = int(data["player_id"])
+            print("Sono il player", self.player_id)
             self.controller.player_id = self.player_id
         elif type == Package.WAIT_FOR_GAME:
             self.wait_for_game(int(data["number_of_players"]))
@@ -94,12 +95,10 @@ class Client:
 
     def receive_game_state(self, player_id, grid, current_piece, player_name):
         '''Receive the game state of a player'''
-        print("Ricevo game state da ", player_name)
         self.controller.receive_game_state(player_id, grid, current_piece, player_name)
 
     def receive_broken_row(self, player_name):
         '''Receive a broken row'''
-        print("Received a broken row")
         self.controller.receive_broken_line(player_name)
 
     def receive_defeat(self, player_id, player_name):
@@ -108,7 +107,6 @@ class Client:
 
     def receive_game_over(self, winner_id, winner_name):
         '''Receive the game over'''
-        print("Ricevo game over")
         self.controller.receive_game_over(winner_id, winner_name)
 
     def wait_for_game(self, number_of_players):

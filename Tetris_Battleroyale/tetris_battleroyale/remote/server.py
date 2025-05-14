@@ -41,8 +41,8 @@ class Server:
                 p_type, p_data = Package.decode(data)
                 self.handle_received_packet(addr, p_type, p_data)
             except ConnectionResetError as e:
-                print("Si è disconnesso ", addr)
-                if addr in self.state.addr_and_player:
+                if addr in self.state.addr_and_player and time.time() - self.last_seen[self.state.addr_and_player[addr]] > 2:
+                    print("Disconnetto ", addr, " per client chiuso")
                     self.handle_disconnection(self.state.addr_and_player[addr])
                 continue
             except OSError as e:
@@ -61,6 +61,7 @@ class Server:
             current_time = time.time()
             for id, p_time in list(self.last_seen.items()):
                 if current_time - p_time > 5 and id in self.state.player_and_addr:
+                    print("Disconnetto ", id, " per heartbeat")
                     self.handle_disconnection(id)
     
     def receive_ping_and_heartbeat(self):
@@ -154,7 +155,7 @@ class Server:
             winner = self.state.games[self.state.player_and_game[player_id]].get_winner_id()
             self.send_broadcast_message(
                 self.state.player_and_game[player_id],
-                player_id,
+                None,
                 Package.GAME_OVER,
                 winner_id = winner,
                 winner_name = self.state.player_and_name[winner]

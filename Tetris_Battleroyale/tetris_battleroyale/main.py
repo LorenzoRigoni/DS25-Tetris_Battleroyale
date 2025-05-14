@@ -41,9 +41,7 @@ class TetrisLauncher:
     def run(self):
         input_rect = pygame.Rect(100, 120, 200, 40)
         button_rect = pygame.Rect(100, 190, 200, 50)
-        self.name = ""
-        
-        self.start()
+
         while self.running:
             self.screen.fill((30, 30, 30))
             title = self.font.render("TETRIS BATTLEROYALE", True, (255, 255, 255))

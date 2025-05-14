@@ -138,23 +138,12 @@ class GameView:
         return False
 
     def display_game_over(self, screen, main):
-        # Display the game over text if not main put a cross over it
-        font = pygame.font.SysFont(None, 48)
-        game_over_text = font.render("GAME OVER", True, WHITE)
-        #put game over text in the middle of the screen
-        text_rect = game_over_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-        screen.blit(game_over_text, text_rect)
-        
-
         if not main:
             cross_color = (255, 0, 0)
             cross_width = 5
             pygame.draw.line(screen, cross_color, (0, 0), (WIDTH/2, HEIGHT), cross_width)
             pygame.draw.line(screen, cross_color, (WIDTH/2, 0), (0, HEIGHT), cross_width)
         
-    
-        
-
     def update(self, grid, current_piece, next_piece, hold_piece, game_over=False):
         # Update the display with the current game state
         self.screen.fill(BLACK)
@@ -166,5 +155,4 @@ class GameView:
             self.draw_hold_piece(self.screen, hold_piece)  # Draw the hold piece
         if game_over:
             self.display_game_over(self.screen,self.main)
-       
         self.clock.tick(30)

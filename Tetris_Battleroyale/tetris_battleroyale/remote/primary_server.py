@@ -44,6 +44,6 @@ class PrimaryServer(Server):
             try:
                 packet = Package.encode(Package.PRIMARY_HEARTBEAT)
                 self.sock.sendto(packet, self.backup_addr)
-                time.sleep(2)
+                time.sleep(1)
             except Exception as e:
                 print("Error sending heartbeat to backup: ", e)

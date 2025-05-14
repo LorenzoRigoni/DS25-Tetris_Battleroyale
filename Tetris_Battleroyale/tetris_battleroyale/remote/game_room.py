@@ -1,5 +1,5 @@
 class GameRoom:
-    def __init__(self, game_id):
+    def __init__(self, game_id = -1):
         self.min_num_players_to_start = 5
 
         self.game_id = game_id

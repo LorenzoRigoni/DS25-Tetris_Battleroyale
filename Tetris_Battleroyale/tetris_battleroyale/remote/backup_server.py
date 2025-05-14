@@ -42,7 +42,7 @@ class BackupServer(Server):
                     self.last_primary_heartbeat = time.time()
                     if self.active:
                         self.stop_backup()
-                elif type == Package.PING and not self.active and time.time() - self.last_primary_heartbeat > 3:
+                elif type == Package.HEARTBEAT and not self.active and time.time() - self.last_primary_heartbeat > 2:
                     self.replace_primary_server()
                 else:
                     self.handle_received_packet(addr, type, p_data)

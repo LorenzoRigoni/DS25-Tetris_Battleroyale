@@ -18,7 +18,7 @@ class Client:
         self.running = True
         self.controller = controller
 
-    def send_heartbeat(self, timeout = 3):
+    def send_heartbeat(self, timeout = 2):
         ping_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         ping_socket.settimeout(timeout)
 
@@ -27,6 +27,12 @@ class Client:
                 ping_socket.sendto(Package.encode(Package.HEARTBEAT, player_id = self.player_id), self.ping_addr)
                 _ = ping_socket.recv(8192)
             except socket.timeout:
+                print("Cambio server")
+                self.active_server_addr = self.backup_server_addr if self.active_server_addr == self.primary_server_addr else self.primary_server_addr
+                ping_socket.sendto(Package.encode(Package.HEARTBEAT, player_id = self.player_id), self.active_server_addr)
+                continue
+            except ConnectionResetError as e:
+                print("Cambio server")
                 self.active_server_addr = self.backup_server_addr if self.active_server_addr == self.primary_server_addr else self.primary_server_addr
                 ping_socket.sendto(Package.encode(Package.HEARTBEAT, player_id = self.player_id), self.active_server_addr)
                 continue

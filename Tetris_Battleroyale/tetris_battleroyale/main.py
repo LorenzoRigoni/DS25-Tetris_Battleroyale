@@ -49,9 +49,7 @@ class TetrisLauncher:
 
             mouse_pos = pygame.mouse.get_pos()
             click = False
-            self.name = ""
 
-            self.start()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False

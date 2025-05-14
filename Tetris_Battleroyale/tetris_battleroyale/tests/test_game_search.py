@@ -30,8 +30,8 @@ def test_is_room_ready_for_game(room: GameRoom):
     assert room.add_player(0) is False
     assert room.add_player(1) is False
     assert room.add_player(2) is False
-    assert room.add_player(3) is True
-    assert room.is_room_available() is True
+    assert room.add_player(3) is False
+    assert room.add_player(4) is True
 
 def test_start_game(room: GameRoom):
     '''Test the room is not available anymore'''
@@ -43,7 +43,10 @@ def test_is_game_over(room: GameRoom):
     assert room.add_player(0) is False
     assert room.add_player(1) is False
     assert room.add_player(2) is False
-    assert room.add_player(3) is True
-    assert room.is_game_over(0) is False
-    assert room.is_game_over(1) is False
-    assert room.is_game_over(2) is True
+    assert room.add_player(3) is False
+    assert room.add_player(4) is True
+    room.remove_player(0)
+    room.remove_player(1)
+    room.remove_player(2)
+    room.remove_player(3)
+    assert room.is_game_over() is True

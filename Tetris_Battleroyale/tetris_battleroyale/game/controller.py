@@ -136,9 +136,11 @@ class TetrisController:
         pygame.quit()
 
     def receive_game_state(self, playerNumber, grid, current_piece, player_name):
-        self.grids[playerNumber % 4] = grid
-        self.current_pieces[playerNumber % 4] = current_piece
-        self.names[playerNumber % 4] = player_name
+        if playerNumber > self.player_id:
+            playerNumber -= 1
+        self.grids[playerNumber] = grid
+        self.current_pieces[playerNumber] = current_piece
+        self.names[playerNumber] = player_name
 
     def send_game_state(self):
         self.client.send_game_state(self.model.grid, self.model.current_piece)

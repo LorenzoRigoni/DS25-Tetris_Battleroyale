@@ -11,7 +11,8 @@ class TetrisController:
     players_in_lobby=0
     winner_name = ""
     names=[]
-    def __init__(self,name,player_number = 9 ):
+    player_id = 0
+    def __init__(self,name,player_number = 5 ):
         self.name= name
         self.running = True
         self.game_over = False 
@@ -27,12 +28,13 @@ class TetrisController:
         self.fast_fall = False
         self.last_move_time = pygame.time.get_ticks()
         self.move_cooldown = 200  # Cooldown for lateral movement (in milliseconds)
-
+        
         
         #initilize grids and pieces
         self.grids = [None]*self.player_number
         self.current_pieces = [None]*self.player_number
         self.defeats = [False]*self.player_number
+        self.names = [None]*self.player_number
         self.grid = [[0 for _ in range(COLS)] for _ in range(ROWS)]
         self.current_piece = {'shape': [[1, 1, 1], [0, 1, 0]], 'color': (255, 0, 0), 'x': 3, 'y': 0}
         self.next_piece = {'shape': [[1, 1, 1], [0, 1, 0]], 'color': (255, 0, 0), 'x': 3, 'y': 0}
@@ -42,7 +44,7 @@ class TetrisController:
                     self.grids[i] = [[0 for _ in range(COLS)] for _ in range(ROWS)]
                     self.current_pieces[i] = {'shape': [[1, 1, 1], [0, 1, 0]], 'color': (255, 0, 0), 'x': 3, 'y': 0}
                     self.defeats[i] = False
-                    self.names.append("")
+                    self.names[i] = ""
             
     def handle_events(self):
         # Handle user input events
@@ -128,7 +130,7 @@ class TetrisController:
                             if event.key == pygame.K_ESCAPE:
                                 self.paused = not self.paused
             self.view.update_all()
-            self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, self.game_over,self.defeats,self.name,self.names)
+            self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, self.game_over,self.defeats,self.name,self.names,self.player_id)
             self.handle_pause()
 
 
@@ -136,6 +138,7 @@ class TetrisController:
         pygame.quit()
 
     def receive_game_state(self, playerNumber, grid, current_piece, player_name):
+        print(f"{playerNumber}  {len(self.names)}")
         self.grids[playerNumber] = grid
         self.current_pieces[playerNumber] = current_piece
         self.names[playerNumber] = player_name
@@ -143,7 +146,6 @@ class TetrisController:
         self.client.send_game_state(self.model.grid, self.model.current_piece)
 
     def send_broken_row(self):
-        print(self.player_number)
         self.client.send_broken_row()
 
     def send_defeat(self):

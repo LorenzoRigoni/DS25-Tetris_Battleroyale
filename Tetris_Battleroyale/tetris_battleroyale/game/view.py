@@ -27,14 +27,17 @@ class TetrisView:
         main_surface = pygame.Surface((GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT))
         self.main_game_view = GameView(main=True, screen=main_surface)
 
-    def update(self, grid, current_piece,grids, current_pieces, next_piece, hold_piece, game_over,games_over,name,names):
+    def update(self, grid, current_piece,grids, current_pieces, next_piece, hold_piece, game_over,games_over,name,names, current_player_id):
         # Clear the main screen
         self.screen.fill(BLACK)
 
         # Draw the 8 small game views
         small_width = GAME_SCREEN_WIDTH // 2
         small_height = GAME_SCREEN_HEIGHT // 2
-        for i, (game_view, game_surface) in enumerate(self.game_views):
+        views_copy = self.game_views.copy()
+        #remove the game view of the current player from the list of game views
+        #views_copy.pop(current_player_id)
+        for i, (game_view, game_surface) in enumerate(views_copy):
             x = i % 2 * small_width + (GAME_SCREEN_WIDTH*2 if i >= 4 else 0)
             y = ((i// 2)%2) * small_height
             # Update the game view on its own surface
@@ -69,11 +72,11 @@ class TetrisView:
         #pygame.display.flip()
         #self.clock.tick(30)
     
-    def display_searching(self,number_out_of_9):
+    def display_searching(self,number_out_of_5):
         # Display the searching screen
         self.screen.fill(BLACK)
         font = pygame.font.Font(None, 74)
-        text = font.render(f"Searching for a game... {number_out_of_9}/3", True, WHITE)
+        text = font.render(f"Searching for a game... {number_out_of_5}/5", True, WHITE)
         text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(text, text_rect)
     #pause screen with button to exit to main menu

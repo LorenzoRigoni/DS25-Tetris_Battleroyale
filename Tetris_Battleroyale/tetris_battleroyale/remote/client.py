@@ -74,6 +74,7 @@ class Client:
         '''Handle the data received from the server'''
         if type == Package.HANDSHAKE:
             self.player_id = int(data["player_id"])
+            self.controller.player_id = self.player_id
         elif type == Package.WAIT_FOR_GAME:
             self.wait_for_game(int(data["number_of_players"]))
         elif type == Package.GAME_START:

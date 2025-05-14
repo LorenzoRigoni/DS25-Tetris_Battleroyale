@@ -133,15 +133,13 @@ class TetrisController:
             self.view.update(self.model.grid, self.model.current_piece,self.grids,self.current_pieces, self.model.next_piece, self.model.hold_piece, self.game_over,self.defeats,self.name,self.names,self.player_id)
             self.handle_pause()
 
-
-
         pygame.quit()
 
     def receive_game_state(self, playerNumber, grid, current_piece, player_name):
-        print(f"{playerNumber}  {len(self.names)}")
-        self.grids[playerNumber] = grid
-        self.current_pieces[playerNumber] = current_piece
-        self.names[playerNumber] = player_name
+        self.grids[playerNumber % 4] = grid
+        self.current_pieces[playerNumber % 4] = current_piece
+        self.names[playerNumber % 4] = player_name
+
     def send_game_state(self):
         self.client.send_game_state(self.model.grid, self.model.current_piece)
 

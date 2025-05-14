@@ -108,6 +108,7 @@ class Client:
 
     def receive_game_over(self, winner_id, winner_name):
         '''Receive the game over'''
+        print("Ricevo game over")
         self.controller.receive_game_over(winner_id, winner_name)
 
     def wait_for_game(self, number_of_players):

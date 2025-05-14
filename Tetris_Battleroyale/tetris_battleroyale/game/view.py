@@ -12,7 +12,7 @@ class TetrisView:
         # Initialize the Pygame window and set up the display
         pygame.init()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption('Tetris')
+        pygame.display.set_caption('Tetris BattleRoyale')
         self.clock = pygame.time.Clock()
 
         # Create 5 game views: 4 small ones and 1 main one
@@ -93,14 +93,14 @@ class TetrisView:
         pygame.draw.rect(self.screen, WHITE, button_rect.inflate(20, 20), 0)
         self.screen.blit(button_text, button_rect)
         return button_rect
-
     
     def display_game_over(self):
         # Display the game over screen
         font = pygame.font.Font(None, 74)
-        text = font.render("You won", True, WHITE)
+        text = font.render("Game over", True, WHITE)
         text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(text, text_rect)
+
     def display_winner(self, winner_name):
         # Display the winner screen
         font = pygame.font.Font(None, 74)

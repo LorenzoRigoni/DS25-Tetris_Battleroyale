@@ -161,7 +161,6 @@ class Server:
             )
             
             finished_game_id = self.state.player_and_game[player_id]
-            self.state.games.remove(self.state.games[finished_game_id])
             for p_id, game_id in list(self.state.player_and_game.items()):
                 if game_id == finished_game_id:
                     del self.state.player_and_game[p_id]

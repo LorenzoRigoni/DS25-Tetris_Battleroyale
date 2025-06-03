@@ -1,7 +1,7 @@
 import socket
 import threading
 import time
-from remote.package import Package
+from .package import Package
 import traceback
 
 class Client:

@@ -2,7 +2,7 @@ import pygame
 from .model import TetrisModel
 from .view import TetrisView
 from .vars import *
-import time
+import sys
 
 class TetrisController:
     '''This class is the controller of the MVC pattern. It manages the model and the view of the game.'''
@@ -73,6 +73,13 @@ class TetrisController:
         
         while self.running:
             if not self.game_over:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.running = False
+
+                if not self.running:
+                    break
+
                 self.handle_events()
 
                 keys = pygame.key.get_pressed()
@@ -123,6 +130,7 @@ class TetrisController:
             self.handle_pause()
 
         pygame.quit()
+        sys.exit()
 
     def receive_game_state(self, playerNumber, grid, current_piece, player_name):
         '''Receive game state from other user'''

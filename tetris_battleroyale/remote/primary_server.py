@@ -1,8 +1,8 @@
 import threading
 import time
 import socket
-from remote.server import Server
-from remote.package import Package
+from .server import Server
+from .package import Package
 
 class PrimaryServer(Server):
     '''This class represents the primary server. Every 2 seconds, it sends to the backup server its heartbeat.

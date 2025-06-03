@@ -1,7 +1,7 @@
 import json
 import threading
 from pathlib import Path
-from remote.game_room import GameRoom
+from .game_room import GameRoom
 
 class ServerState:
     '''This class manages and saves the values of the varibales used by the server.'''

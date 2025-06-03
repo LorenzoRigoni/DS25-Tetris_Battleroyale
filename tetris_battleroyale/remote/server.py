@@ -2,9 +2,9 @@ import socket
 import threading
 import time
 import traceback
-from remote.package import Package
-from remote.game_room import GameRoom
-from remote.server_state import ServerState
+from .package import Package
+from .game_room import GameRoom
+from .server_state import ServerState
 
 class Server:
     '''This class manage all the server events'''

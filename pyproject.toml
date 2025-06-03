@@ -9,10 +9,11 @@ authors = ["Lorenzo Rigoni <lorenzo.rigoni2@studio.unibo.it>", "Riccardo Moretti
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.13"
+python = ">=3.13,<3.14"
 pygame = "^2.6.1"
 pytest = "^8.4.0"
 pymongo = "^4.13.0"
+pyinstaller = "^6.13.0"
 
 
 [build-system]

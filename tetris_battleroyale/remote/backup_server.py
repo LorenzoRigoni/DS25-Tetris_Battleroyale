@@ -1,9 +1,8 @@
 import socket
 import time
 import threading
-from remote.package import Package
-from remote.server import Server
-from remote.game_room import GameRoom
+from .package import Package
+from .server import Server
 
 class BackupServer(Server):
     '''This class represents the backup server. It checks the availability of the primary server and, when the primary goes offline, the backup is promoted

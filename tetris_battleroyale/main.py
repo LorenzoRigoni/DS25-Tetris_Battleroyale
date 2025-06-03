@@ -1,6 +1,6 @@
 import pygame
-from remote.client import Client
-from game.controller import TetrisController
+from tetris_battleroyale.remote.client import Client
+from tetris_battleroyale.game.controller import TetrisController
 import threading
 
 WIDTH, HEIGHT = 400, 350

@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "tetris-battleroyale"
+packages = [
+    { include = "tetris_battleroyale" }
+]
+version = "0.1.0"
+description = "Tetris Battleroyale is a multiplayer implementation of classic game Tetris. In this case, each player in a lobby plays a match of Tetris and, when he breaks a line, he sends it to all other gamers. The last player who survive, wins the game."
+authors = ["Lorenzo Rigoni <lorenzo.rigoni2@studio.unibo.it>", "Riccardo Moretti <riccardo.moretti6@studio.unibo.it>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+pygame = "^2.6.1"
+pytest = "^8.4.0"
+pymongo = "^4.13.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

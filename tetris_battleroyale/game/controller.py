@@ -98,6 +98,12 @@ class TetrisController:
                 else:
                     self.fast_fall = False
 
+                if keys[pygame.K_UP]:
+                    self.model.rotate_piece_intelligently()
+
+                if keys[pygame.K_SPACE]:
+                    self.model.drop_piece_to_bottom()
+
                 if current_time - self.last_fall_time > (self.fall_speed // 10 if self.fast_fall else self.fall_speed):
                     if not self.model.move_piece(0, 1):
                         self.game_over = self.model.lock_piece()

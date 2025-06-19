@@ -1,1 +1,1 @@
-{"player_and_addr": {}, "addr_and_player": {}, "player_and_name": {}, "player_and_game": {}, "player_id_counter": 5, "games_id": 1, "games": [{"players_id": [0], "game_id": 0, "available": false}]}
+{"player_and_addr": {"0": ["127.0.0.1", 55443]}, "addr_and_player": {"127.0.0.1::55443": 0}, "player_and_name": {"0": "a"}, "player_and_game": {}, "player_id_counter": 5, "games_id": 1, "games": [{"players_id": [0], "game_id": 0, "available": false}]}

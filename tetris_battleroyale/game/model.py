@@ -131,7 +131,6 @@ class TetrisModel:
 
     def rotate_piece_intelligently(self):
         '''Try to rotate the piece and handle collisions'''
-        print("Ruoto il pezzo")
         self.rotate_piece()
         if self.check_collision():
             self.move_piece(-1, 0)

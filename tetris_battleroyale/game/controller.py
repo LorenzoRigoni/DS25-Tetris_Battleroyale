@@ -49,11 +49,7 @@ class TetrisController:
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    self.model.rotate_piece_intelligently()
-                elif event.key == pygame.K_SPACE:
-                    self.model.drop_piece_to_bottom()
-                elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
+                if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
                     self.model.hold_current_piece()
                 elif event.key == pygame.K_m:
                     self.model.add_broken_line()
@@ -76,6 +72,11 @@ class TetrisController:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         self.running = False
+                    elif event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_SPACE:
+                            self.model.drop_piece_to_bottom()
+                        elif event.key == pygame.K_UP:
+                            self.model.rotate_piece_intelligently()
 
                 if not self.running:
                     break
@@ -97,12 +98,6 @@ class TetrisController:
                     self.fast_fall = True
                 else:
                     self.fast_fall = False
-
-                if keys[pygame.K_UP]:
-                    self.model.rotate_piece_intelligently()
-
-                if keys[pygame.K_SPACE]:
-                    self.model.drop_piece_to_bottom()
 
                 if current_time - self.last_fall_time > (self.fall_speed // 10 if self.fast_fall else self.fall_speed):
                     if not self.model.move_piece(0, 1):

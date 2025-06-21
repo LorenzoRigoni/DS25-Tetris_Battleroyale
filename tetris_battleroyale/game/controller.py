@@ -3,6 +3,7 @@ from .model import TetrisModel
 from .view import TetrisView
 from .vars import *
 import sys
+import queue
 
 class TetrisController:
     '''This class is the controller of the MVC pattern. It manages the model and the view of the game.'''
@@ -12,6 +13,7 @@ class TetrisController:
     winner_name = ""
     names=[]
     player_id = 0
+
     def __init__(self,name,player_number = 5 ):
         self.name= name
         self.running = True
@@ -19,6 +21,7 @@ class TetrisController:
         self.game_ended= False
         self.searching = True
         self.paused = False
+        self.event_queue = queue.Queue()
         self.player_number = player_number
         self.model = TetrisModel(self)
         self.view = TetrisView()
@@ -68,6 +71,15 @@ class TetrisController:
             self.view.update_all()
         
         while self.running:
+            try:
+                while True:
+                    event_type, winner_name = self.event_queue.get_nowait()
+                    if event_type == "game_over":
+                        self.game_ended = True
+                        self.game_over = True
+                        self.winner_name = winner_name
+            except queue.Empty:
+                pass
             if not self.game_over:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -176,14 +188,4 @@ class TetrisController:
 
     def receive_game_over(self, winner_name):
         '''Receive the name of the winner'''
-        self.game_ended = True
-        self.game_over = True
-        self.winner_name = winner_name
-        self.view.display_winner(winner_name)
-        # Wait for a key press to quit
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    running = False
+        self.event_queue.put(("game_over", winner_name))
